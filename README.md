@@ -1,2 +1,4 @@
 # AmeisenBotRevamped
-A Bot for WoW - focused on 3.3.5a 12340
+An almost complete rewrite of this -> https://github.com/Jnnshschl/AmeisenBot-3.3.5a
+
+...
