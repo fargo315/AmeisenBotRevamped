@@ -12,6 +12,8 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         private AmeisenBotStateMachine StateMachine { get; set; }
         private Queue<WowPosition> CurrentPath { get; set; }
+
+        public WowPosition ActiveTargetPosition { get; private set; }
         private WowPosition LastPosition { get; set; }
 
         public BotStateFollow(AmeisenBotStateMachine stateMachine)
@@ -28,7 +30,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
                 StateMachine.SwitchState(typeof(BotStateIdle));
                 return;
             }
-            
+
             if (CurrentPath.Count == 0)
             {
                 UpdatePath();
@@ -39,7 +41,8 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             }
             else
             {
-                StateMachine.WowActionExecutor?.MoveToPosition(CurrentPath.Peek());
+                ActiveTargetPosition = CurrentPath.Peek();
+                StateMachine.WowActionExecutor?.MoveToPosition(ActiveTargetPosition);
 
                 WowPosition myPosition = player.Position;
                 if (BotMath.GetDistance(myPosition, CurrentPath.Peek()) < 2.5)
@@ -61,7 +64,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
         {
             WowPosition myPosition = ((WowUnit)StateMachine.ObjectManager.GetWowObjectByGuid(StateMachine.WowDataAdapter.PlayerGuid)).Position;
             Vector3 myPos = new Vector3(myPosition.x, myPosition.y, myPosition.z);
-            Vector3 targetPos = new Vector3(myPosition.x, myPosition.y, myPosition.z);
+            Vector3 targetPos = new Vector3(UnitToFollow.Position.x, UnitToFollow.Position.y, UnitToFollow.Position.z);
 
             List<Vector3> waypoints = new List<Vector3> { targetPos };
 
@@ -72,8 +75,13 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
             foreach (Vector3 pos in waypoints)
             {
-                CurrentPath.Enqueue(new WowPosition(pos));
+                WowPosition wpos = new WowPosition(pos);
+                if ((pos.X != myPos.X && pos.Y != myPos.Y && pos.Z != myPos.Z) && !CurrentPath.Contains(wpos))
+                    CurrentPath.Enqueue(wpos);
             }
+
+            if ((targetPos.X != myPos.X && targetPos.Y != myPos.Y && targetPos.Z != myPos.Z))
+                CurrentPath.Enqueue(new WowPosition(targetPos));
         }
 
         public override void Exit()
