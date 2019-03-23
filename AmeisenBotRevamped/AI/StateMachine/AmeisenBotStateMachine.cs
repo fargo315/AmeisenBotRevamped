@@ -60,6 +60,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         private void CStateMachineUpdate(object sender, ElapsedEventArgs e)
         {
             CurrentState.Execute();
+            WowActionExecutor.AntiAfk();
         }
 
         public void SwitchState(Type newType)

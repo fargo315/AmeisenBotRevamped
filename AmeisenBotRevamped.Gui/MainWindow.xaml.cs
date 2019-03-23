@@ -78,12 +78,6 @@ namespace AmeisenBotRevamped.Gui
             ViewUpdateTimer.Start();
 
             WowAccount wowAccount = new WowAccount()
-            {
-                Username = "Jannis2",
-                Password = "MauMau",
-                CharacterSlot = 0
-            };
-            AmeisenBots.First().AutologinProvider.DoLogin(AmeisenBots.First().Process, wowAccount, new Wotlk335a12340OffsetList());
         }
 
         private void ScanForWows()
