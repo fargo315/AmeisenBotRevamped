@@ -33,6 +33,8 @@ namespace AmeisenBotRevamped.Gui.Views
 
         public void UpdateView()
         {
+            if (AmeisenBot.WowDataAdapter.GameState == WowGameState.Crashed) return;
+
             ulong playerGuid = AmeisenBot.WowDataAdapter.PlayerGuid;
             WowPlayer player = (WowPlayer)AmeisenBot.ObjectManager.GetWowObjectByGuid(playerGuid);
 

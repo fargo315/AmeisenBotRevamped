@@ -11,6 +11,9 @@ namespace AmeisenBotRevamped.Autologin
 {
     public interface IAutologinProvider
     {
+        bool LoginInProgress { get; }
+        string LoginInProgressCharactername { get; }
+
         void DoLogin(Process process, WowAccount wowAccount, IOffsetList offsetlist);
     }
 }

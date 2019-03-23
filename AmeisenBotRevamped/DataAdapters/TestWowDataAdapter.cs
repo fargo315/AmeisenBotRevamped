@@ -132,5 +132,10 @@ namespace AmeisenBotRevamped.DataAdapters
         {
 
         }
+
+        public void ClearCaches()
+        {
+
+        }
     }
 }

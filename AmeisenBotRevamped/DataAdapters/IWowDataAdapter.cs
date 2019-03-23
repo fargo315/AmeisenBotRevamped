@@ -29,5 +29,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
         void StartObjectUpdates();
         void StopObjectUpdates();
+
+        void ClearCaches();
     }
 }

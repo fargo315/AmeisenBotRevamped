@@ -290,15 +290,19 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         private void DisposeHook()
         {
-            if (IsWoWHooked)
+            try
             {
-                BlackMagic.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
+                if (IsWoWHooked)
+                {
+                    BlackMagic.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
 
-                BlackMagic.FreeMemory(CodecaveForCheck);
-                BlackMagic.FreeMemory(CodecaveForExecution);
-                BlackMagic.FreeMemory(CodeToExecuteAddress);
-                BlackMagic.FreeMemory(ReturnValueAddress);
+                    BlackMagic.FreeMemory(CodecaveForCheck);
+                    BlackMagic.FreeMemory(CodecaveForExecution);
+                    BlackMagic.FreeMemory(CodeToExecuteAddress);
+                    BlackMagic.FreeMemory(ReturnValueAddress);
+                }
             }
+            catch { }
         }
 
         private uint GetEndScene()

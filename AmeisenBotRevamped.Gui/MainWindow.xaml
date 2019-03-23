@@ -11,6 +11,6 @@
         <WrapPanel x:Name="mainWrappanel" Margin="0,20,0,0"/>
         <Rectangle Fill="#FFB4B4B4" Margin="0,18,-2,0" Height="2" VerticalAlignment="Top"/>
         <Button x:Name="buttonMinimize" Content="_" Margin="0,-2,18,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" Click="ButtonMinimize_Click"/>
-        <Button x:Name="buttonSettings" Content="🛠" Margin="0,-2,38,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" FontSize="10"/>
+        <Button x:Name="buttonSettings" Content="🛠" Margin="0,-2,38,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" FontSize="10" Click="ButtonSettings_Click"/>
     </Grid>
 </Window>

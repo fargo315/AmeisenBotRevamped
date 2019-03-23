@@ -11,5 +11,6 @@ namespace AmeisenBotRevamped.Autologin.Structs
         public string Username { get; set; }
         public string Password { get; set; }
         public int CharacterSlot { get; set; }
+        public string CharacterName { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using AmeisenBotRevamped.EventAdapters;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
+using System;
 using System.Diagnostics;
 
 namespace AmeisenBotRevamped
@@ -28,9 +29,11 @@ namespace AmeisenBotRevamped
 
         public BlackMagic BlackMagic { get; private set; }
         public Process Process { get; private set; }
+        public bool Attached { get; private set; }
 
         public AmeisenBot(BlackMagic blackMagic, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process)
         {
+            Attached = false;
             AutologinProvider = autologinProvider;
             Process = process;
 
@@ -41,6 +44,7 @@ namespace AmeisenBotRevamped
 
         public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter)
         {
+            Attached = true;
             WowActionExecutor = wowActionExecutor;
             WowPathfindingClient = wowPathfindingClient;
             WowEventAdapter = wowEventAdapter;
@@ -63,12 +67,18 @@ namespace AmeisenBotRevamped
 
         private void COnGamestateChanged(bool IsWorldLoaded, WowGameState gameState)
         {
+            CheckForStuffToStart(IsWorldLoaded);
+
+            if (gameState == WowGameState.Crashed)
+            {
+                Detach();
+                return;
+            }
+
             if (WowActionExecutor != null)
             {
                 WowActionExecutor.IsWorldLoaded = IsWorldLoaded;
             }
-
-            CheckForStuffToStart(IsWorldLoaded);
         }
 
         private void CheckForStuffToStart(bool isWorldLoaded)
@@ -85,6 +95,11 @@ namespace AmeisenBotRevamped
                 if (StateMachine != null && !StateMachine.Enabled) { StateMachine.Start(); }
                 if (WowEventAdapter != null && !WowEventAdapter.Enabled) { WowEventAdapter.Start(); }
             }
+        }
+
+        public void ClearCaches()
+        {
+            WowDataAdapter.ClearCaches();
         }
     }
 }

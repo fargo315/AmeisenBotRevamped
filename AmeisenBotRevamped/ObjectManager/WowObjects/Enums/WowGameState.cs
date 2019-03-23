@@ -4,6 +4,7 @@
     {
         Login,
         Charselect,
-        World
+        World,
+        Crashed
     }
 }

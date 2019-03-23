@@ -26,32 +26,46 @@ namespace AmeisenBotRevamped.Autologin
 
         private IOffsetList OffsetList { get; set; }
 
+        public bool LoginInProgress { get; private set; }
+
+        public string LoginInProgressCharactername { get; private set; }
+
         public void DoLogin(Process process, WowAccount wowAccount, IOffsetList offsetlist)
         {
-            BlackMagic blackMagic = new BlackMagic(process.Id);
-            int count = 0;
-
-            OffsetList = offsetlist;
-
-            while (blackMagic.ReadInt(offsetlist.StaticIsWorldLoaded) != 1 && count < 8)
+            try
             {
-                switch (blackMagic.ReadASCIIString(offsetlist.StaticGameState, 10))
+                BlackMagic blackMagic = new BlackMagic(process.Id);
+                int count = 0;
+
+                LoginInProgress = true;
+                LoginInProgressCharactername = wowAccount.CharacterName;
+
+                OffsetList = offsetlist;
+
+                while (blackMagic.ReadInt(offsetlist.StaticIsWorldLoaded) != 1 && count < 8)
                 {
-                    case "login":
-                        HandleLogin(blackMagic, process, wowAccount);
-                        break;
+                    switch (blackMagic.ReadASCIIString(offsetlist.StaticGameState, 10))
+                    {
+                        case "login":
+                            HandleLogin(blackMagic, process, wowAccount);
+                            break;
 
-                    case "charselect":
-                        HandleCharSelect(blackMagic,process, wowAccount);
-                        break;
+                        case "charselect":
+                            HandleCharSelect(blackMagic, process, wowAccount);
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
+
+                    Thread.Sleep(2000);
+                    count++;
                 }
-
-                Thread.Sleep(2000);
-                count++;
             }
+            catch { }
+
+            LoginInProgress = false;
+            LoginInProgressCharactername = "";
         }
 
         private void HandleLogin(BlackMagic blackMagic, Process process, WowAccount wowAccount)
