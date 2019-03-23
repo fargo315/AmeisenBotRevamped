@@ -76,8 +76,6 @@ namespace AmeisenBotRevamped.Gui
             }
 
             ViewUpdateTimer.Start();
-
-            WowAccount wowAccount = new WowAccount()
         }
 
         private void ScanForWows()
