@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{810A0929-D1D7-438E-B98D-2D5426F4A4C5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AmeisenBotRevamped</RootNamespace>
+    <AssemblyName>AmeisenBotRevampedLib</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BlackMagic, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Blackmagic\BlackMagic.dll</HintPath>
+    </Reference>
+    <Reference Include="fasmdll_managed, Version=1.0.5080.15965, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Blackmagic\fasmdll_managed.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionExecutors\Enums\ClickToMoveType.cs" />
+    <Compile Include="ActionExecutors\IWowActionExecutor.cs" />
+    <Compile Include="ActionExecutors\MemoryWowActionExecutor.cs" />
+    <Compile Include="ActionExecutors\SafeNativeMethods.cs" />
+    <Compile Include="AI\StateMachine\AmeisenBotStateMachine.cs" />
+    <Compile Include="AI\StateMachine\States\BotStateFollow.cs" />
+    <Compile Include="AI\StateMachine\States\BotStateIdle.cs" />
+    <Compile Include="AI\StateMachine\States\BotState.cs" />
+    <Compile Include="AmeisenBot.cs" />
+    <Compile Include="Autologin\IAutologinProvider.cs" />
+    <Compile Include="Autologin\SimpleAutologinProvider.cs" />
+    <Compile Include="Autologin\Structs\WowAccount.cs" />
+    <Compile Include="Clients\AmeisenNavPathfindingClient.cs" />
+    <Compile Include="Clients\IPathfindingClient.cs" />
+    <Compile Include="Clients\Structs\PathRequest.cs" />
+    <Compile Include="Clients\Structs\Vector3.cs" />
+    <Compile Include="DataAdapters\DataSets\BasicInfoDataSet.cs" />
+    <Compile Include="DataAdapters\IWowDataAdapter.cs" />
+    <Compile Include="DataAdapters\MemoryWowDataAdapter.cs" />
+    <Compile Include="DataAdapters\TestWowDataAdapter.cs" />
+    <Compile Include="EventAdapters\IWowEventAdapter.cs" />
+    <Compile Include="EventAdapters\MemoryWowEventAdapter.cs" />
+    <Compile Include="EventAdapters\Structs\RawEvent.cs" />
+    <Compile Include="EventAdapters\WowEvents.cs" />
+    <Compile Include="ObjectManager\WowObjectManager.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\UnitFlags.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\UnitFlagsDynamic.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\WowClass.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\WowGameState.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\WowObjectType.cs" />
+    <Compile Include="ObjectManager\WowObjects\Enums\WowRace.cs" />
+    <Compile Include="ObjectManager\WowObjects\Structs\WowPosition.cs" />
+    <Compile Include="ObjectManager\WowObjects\WowObject.cs" />
+    <Compile Include="ObjectManager\WowObjects\WowPlayer.cs" />
+    <Compile Include="ObjectManager\WowObjects\WowUnit.cs" />
+    <Compile Include="OffsetLists\IOffsetList.cs" />
+    <Compile Include="OffsetLists\Wotlk335a12340OffsetList.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\BotMath.cs" />
+    <Compile Include="Utils\BotUtils.cs" />
+    <Compile Include="Utils\WowProcess.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
