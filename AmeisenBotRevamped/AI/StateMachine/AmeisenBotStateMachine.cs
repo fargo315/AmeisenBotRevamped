@@ -79,7 +79,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public bool IsUnitInFollowRange(WowUnit unitToFollow)
         {
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
-            WowPosition myPosition = WowDataAdapter.ActivePlayerPosition;
+            WowPosition myPosition = wowPlayer.Position;
 
             if (wowPlayer == null || unitToFollow == null) return false;
 
@@ -98,7 +98,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public bool IsUnitInFollowMaxRange(WowUnit unitToFollow)
         {
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
-            WowPosition myPosition = WowDataAdapter.ActivePlayerPosition;
+            WowPosition myPosition = wowPlayer.Position;
 
             if (wowPlayer == null || unitToFollow == null) return false;
 
