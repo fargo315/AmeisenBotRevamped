@@ -14,14 +14,14 @@ namespace AmeisenBotRevamped.Test
         public void Setup()
         {
             TestWowDataAdapter dataAdapter = new TestWowDataAdapter();
-            ameisenBot = new AmeisenBot(dataAdapter, null, null, null);
+            ameisenBot = new AmeisenBot(null, dataAdapter, null, null);
         }
 
         [TestMethod]
         public void AmeisenBotSetup()
         {
             TestWowDataAdapter adapter = new TestWowDataAdapter();
-            AmeisenBot bot = new AmeisenBot(adapter, null, null, null);
+            AmeisenBot bot = new AmeisenBot(null, adapter, null, null);
         }
 
         [TestMethod]

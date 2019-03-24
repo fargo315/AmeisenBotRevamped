@@ -11,7 +11,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
         [TestMethod()]
         public void AmeisenBotStateMachineTest()
         {
-            AmeisenBot ameisenBot = new AmeisenBot(new TestWowDataAdapter(), null, null, null);
+            AmeisenBot ameisenBot = new AmeisenBot(null, new TestWowDataAdapter(), null, null);
             AmeisenBotStateMachine stateMachine = new AmeisenBotStateMachine(ameisenBot.WowDataAdapter, null, null);
             Assert.IsTrue(stateMachine.CurrentState is BotStateIdle);
 
@@ -22,7 +22,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
         [TestMethod()]
         public void AmeisenBotStateMachineTransitionIdleToFollowTest()
         {
-            AmeisenBot ameisenBot = new AmeisenBot(new TestWowDataAdapter(), null, null, null);
+            AmeisenBot ameisenBot = new AmeisenBot(null, new TestWowDataAdapter(), null, null);
             AmeisenBotStateMachine stateMachine = new AmeisenBotStateMachine(ameisenBot.WowDataAdapter, null, null);
 
             Assert.IsTrue(stateMachine.CurrentState is BotStateIdle);
@@ -37,7 +37,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
         [TestMethod()]
         public void IsMeSupposedToFollowTest()
         {
-            AmeisenBot ameisenBot = new AmeisenBot(new TestWowDataAdapter(), null, null, null);
+            AmeisenBot ameisenBot = new AmeisenBot(null, new TestWowDataAdapter(), null, null);
             AmeisenBotStateMachine stateMachine = new AmeisenBotStateMachine(ameisenBot.WowDataAdapter, null, null);
 
             WowUnit unitToFollow = stateMachine.FindUnitToFollow();

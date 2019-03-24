@@ -11,7 +11,7 @@ namespace AmeisenBotRevamped.Clients
     public interface IPathfindingClient
     {
         List<Vector3> GetPath(Vector3 start, Vector3 end, int mapId);
-        bool IsInLineOfSight(Vector3 start, Vector3 end);
+        bool IsInLineOfSight(Vector3 start, Vector3 end, int mapId);
         void Disconnect();
     }
 }

@@ -10,16 +10,17 @@
         <Rectangle Fill="#FF646464" HorizontalAlignment="Left" Height="120" VerticalAlignment="Top" Width="360" Stroke="#FFB4B4B4"/>
         <Image x:Name="botImage" HorizontalAlignment="Left" Height="100" Margin="10,10,0,0" VerticalAlignment="Top" Width="100"/>
         <Label x:Name="labelBotname" Content="BotName" HorizontalAlignment="Left" Margin="115,0,0,0" VerticalAlignment="Top" Foreground="White" Width="105" FontSize="14"/>
-        <Label x:Name="labelBotlevel" Content="lvl. 80" Margin="300,2,10,0" VerticalAlignment="Top" Foreground="White" HorizontalContentAlignment="Right"/>
+        <Label x:Name="labelBotlevel" Content="lvl. 0" Margin="300,2,10,0" VerticalAlignment="Top" Foreground="White" HorizontalContentAlignment="Right"/>
         <Label x:Name="labelBotraceclass" Content="&lt;&gt;" HorizontalAlignment="Left" Margin="115,24,0,0" VerticalAlignment="Top" Foreground="White" Width="130"/>
         <ProgressBar x:Name="progressbarBothealth" HorizontalAlignment="Left" Height="10" Margin="120,52,0,0" VerticalAlignment="Top" Width="100" Value="100" Foreground="#FFA0FF8F"/>
         <ProgressBar x:Name="progressbarBotenergy" HorizontalAlignment="Left" Height="10" Margin="120,83,0,0" VerticalAlignment="Top" Width="100" Value="100" Foreground="#FFFFF88F"/>
         <Label x:Name="labelBothealth" Content="Health: 0/0" HorizontalAlignment="Left" Margin="115,57,0,0" VerticalAlignment="Top" Foreground="White"/>
         <Label x:Name="labelBotenergy" Content="Energy: 0/0" HorizontalAlignment="Left" Margin="115,88,0,0" VerticalAlignment="Top" Foreground="White"/>
         <Label x:Name="labelBotstate" Content="&lt;Idle&gt;" Margin="0,24,10,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Right" Width="125" HorizontalContentAlignment="Right"/>
-        <Label x:Name="labelBotrealm" Content="&lt;Realm&gt;" Margin="0,73,10,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Right" Width="125" HorizontalContentAlignment="Right"/>
-        <Label x:Name="labelBotdebug" Content="0x0" Margin="0,91,8,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Right" Width="127" HorizontalContentAlignment="Right" FontSize="9"/>
-        <Label Content="🤖" HorizontalAlignment="Left" Margin="5,4,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="White" FontSize="72"/>
+        <Label x:Name="labelBotrealm" Content="&lt;Realm&gt;" Margin="0,67,10,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Right" Width="125" HorizontalContentAlignment="Right"/>
+        <Label x:Name="labelBotdebug" Content="0x0" Margin="0,99,0,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Left" Width="110" FontSize="8"/>
+        <Label Content="🤖" HorizontalAlignment="Left" Margin="5,4,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="White" FontSize="72" Height="106"/>
         <Label x:Name="labelBotgamestate" Content="&lt;Login&gt;" Margin="0,44,8,0" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Right" Width="125" HorizontalContentAlignment="Right"/>
+        <Button x:Name="buttonAttach" Content="Attach" HorizontalAlignment="Left" Margin="294,94,0,0" VerticalAlignment="Top" Width="56" Height="17" FontSize="10" Background="#FF8B8B8B" Foreground="White" Click="ButtonAttach_Click"/>
     </Grid>
 </UserControl>

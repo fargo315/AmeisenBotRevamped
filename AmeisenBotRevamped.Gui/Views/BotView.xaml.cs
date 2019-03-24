@@ -1,4 +1,6 @@
-﻿using AmeisenBotRevamped.ObjectManager.WowObjects;
+﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.Clients;
+using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using System;
 using System.Collections.Generic;
@@ -22,18 +24,33 @@ namespace AmeisenBotRevamped.Gui.Views
     /// </summary>
     public partial class BotView : UserControl
     {
-        private AmeisenBot AmeisenBot { get; set; }
+        public delegate void AttachBotFunction(AmeisenBot ameisenBot);
 
-        public BotView(AmeisenBot ameisenBot)
+        private AmeisenBot AmeisenBot { get; set; }
+        private AttachBotFunction AttachBotFunc { get; set; }
+
+        public BotView(AmeisenBot ameisenBot, AttachBotFunction attachBotFunction)
         {
             AmeisenBot = ameisenBot;
+            AttachBotFunc = attachBotFunction;
+
             InitializeComponent();
+
             UpdateView();
         }
 
         public void UpdateView()
         {
             if (AmeisenBot.WowDataAdapter.GameState == WowGameState.Crashed) return;
+
+            if (AmeisenBot.Attached)
+            {
+                buttonAttach.Content = "Detach";
+            }
+            else
+            {
+                buttonAttach.Content = "Attach";
+            }
 
             ulong playerGuid = AmeisenBot.WowDataAdapter.PlayerGuid;
             WowPlayer player = (WowPlayer)AmeisenBot.ObjectManager.GetWowObjectByGuid(playerGuid);
@@ -121,6 +138,11 @@ namespace AmeisenBotRevamped.Gui.Views
                         break;
                 }
             }
+        }
+
+        private void ButtonAttach_Click(object sender, RoutedEventArgs e)
+        {
+            AttachBotFunc?.Invoke(AmeisenBot);
         }
     }
 }

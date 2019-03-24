@@ -47,12 +47,17 @@ namespace AmeisenBotRevamped.Gui
 
         private Dictionary<string, bool> WowStartupMap { get; set; }
 
+        private IOffsetList OffsetList { get; set; }
+
         private string SettingsPath => AppDomain.CurrentDomain.BaseDirectory + "config.json";
+
+        public List<WowAccount> BotFleetAccounts { get; private set; }
 
         public MainWindow()
         {
             InitializeComponent();
 
+            OffsetList = new Wotlk335a12340OffsetList();
             WowStartupMap = new Dictionary<string, bool>();
 
             ViewUpdateTimer = new Timer(1000);
@@ -61,17 +66,48 @@ namespace AmeisenBotRevamped.Gui
             BotFleetTimer = new Timer(1000);
             BotFleetTimer.Elapsed += CBotFleetTimer;
 
-            if (File.Exists(SettingsPath))
+            LoadSettings();
+        }
+
+        #region UIEvents
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            AmeisenBots = new List<AmeisenBot>();
+            BotViews = new List<BotView>();
+
+            BotFleetAccounts = ReadBotFleetAccounts();
+
+            ScanForWows();
+            RefreshActiveWows();
+
+            ViewUpdateTimer.Start();
+            BotFleetTimer.Start();
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ViewUpdateTimer.Stop();
+            BotFleetTimer.Stop();
+
+            foreach (AmeisenBot ameisenBot in AmeisenBots)
             {
-                Settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(SettingsPath));
-            }
-            else
-            {
-                Settings = new Settings() { BotListFilePath = "", WowExecutableFilePath = "" };
-                File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(Settings));
+                ameisenBot.Detach();
             }
         }
 
+        private void MainWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void ButtonMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+        private void ButtonSettings_Click(object sender, RoutedEventArgs e)
+        {
+            CheckForBotFleet();
+        }
+        #endregion
+
+        #region TimerCallbacks
         private void CBotFleetTimer(object sender, ElapsedEventArgs e)
         {
             CheckForBotFleet();
@@ -88,19 +124,31 @@ namespace AmeisenBotRevamped.Gui
             }
             catch { }
         }
+        #endregion
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+
+        private void LoadSettings()
         {
-            AmeisenBots = new List<AmeisenBot>();
-            BotViews = new List<BotView>();
+            if (File.Exists(SettingsPath))
+            {
+                Settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(SettingsPath));
+            }
+            else
+            {
+                Settings = new Settings();
+                File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(Settings));
+            }
+        }
 
-            ScanForWows();
-            RefreshActiveWows();
 
-            ViewUpdateTimer.Start();
-            BotFleetTimer.Start();
-
-            //CheckForBotFleet();
+        private void ScanForWows()
+        {
+            List<AmeisenBot> AmeisenBotsNew = new List<AmeisenBot>();
+            foreach (WowProcess wowProcess in BotUtils.GetRunningWows(OffsetList))
+            {
+                AmeisenBotsNew.Add(SetupAmeisenBot(wowProcess.Process));
+            }
+            AmeisenBots = AmeisenBotsNew;
         }
 
         private void RefreshActiveWows()
@@ -110,7 +158,7 @@ namespace AmeisenBotRevamped.Gui
 
             foreach (AmeisenBot ameisenBot in AmeisenBots)
             {
-                if(ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed)
+                if (ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed)
                 {
                     ameisenBot.Detach();
                     GC.Collect();
@@ -122,14 +170,15 @@ namespace AmeisenBotRevamped.Gui
 
                 AddBotToView(ameisenBot);
 
-                if (!ameisenBot.Attached)
-                    AttachBot(ameisenBot);
+                if (!ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
+                  AttachBot(ameisenBot);
             }
         }
 
+
         private void AddBotToView(AmeisenBot ameisenBot)
         {
-            BotView botview = new BotView(ameisenBot);
+            BotView botview = new BotView(ameisenBot, AttachBot);
 
             if (!BotViews.Contains(botview))
             {
@@ -138,12 +187,37 @@ namespace AmeisenBotRevamped.Gui
             }
         }
 
+        private AmeisenBot SetupAmeisenBot(Process wowProcess)
+        {
+            BlackMagic blackMagic = new BlackMagic(wowProcess.Id);
+
+            IAutologinProvider autologinProvider = new SimpleAutologinProvider();
+            IWowDataAdapter wowDataAdapter = new MemoryWowDataAdapter(blackMagic, OffsetList);
+
+            return new AmeisenBot(blackMagic, wowDataAdapter, autologinProvider, wowProcess);
+        }
+
+        private void AttachBot(AmeisenBot ameisenBot)
+        {
+            if (ameisenBot.Attached)
+            {
+                ameisenBot.Detach();
+            }
+            else
+            {
+                IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.BlackMagic, OffsetList);
+                IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient(Settings.AmeisenNavmeshServerIp, Settings.AmeisenNavmeshServerPort);
+                //IWowEventAdapter wowEventAdapter = new MemoryWowEventAdapter(wowActionExecutor);
+                ameisenBot.Attach(wowActionExecutor, pathfindingClient, null);
+            }
+        }
+
+
         private void CheckForBotFleet()
         {
-            if (Settings.BotListFilePath != "" && File.Exists(Settings.BotListFilePath))
+            if (BotFleetAccounts.Count > 0)
             {
-                List<WowAccount> accounts = JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotListFilePath));
-                foreach (WowAccount wowAccount in accounts)
+                foreach (WowAccount wowAccount in BotFleetAccounts)
                 {
                     if (!WowStartupMap.ContainsKey(wowAccount.CharacterName))
                         WowStartupMap.Add(wowAccount.CharacterName, false);
@@ -184,7 +258,7 @@ namespace AmeisenBotRevamped.Gui
 
                         if (ameisenBot == null) continue;
 
-                        ameisenBot.AutologinProvider.DoLogin(ameisenBot.Process, wowAccount, new Wotlk335a12340OffsetList());
+                        ameisenBot.AutologinProvider.DoLogin(ameisenBot.Process, wowAccount, OffsetList);
                         ameisenBot.ClearCaches();
 
                         try
@@ -205,6 +279,15 @@ namespace AmeisenBotRevamped.Gui
             catch { }
         }
 
+        private List<WowAccount> ReadBotFleetAccounts()
+        {
+            if (Settings.BotListFilePath != "" && File.Exists(Settings.BotListFilePath))
+                return JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotListFilePath));
+            else
+                return new List<WowAccount>();
+        }
+
+
         private bool LoginForCharacterIsInProgress(string characterName)
         {
             foreach (AmeisenBot bot in AmeisenBots) if (bot.AutologinProvider.LoginInProgressCharactername == characterName) return true;
@@ -215,60 +298,6 @@ namespace AmeisenBotRevamped.Gui
         {
             foreach (AmeisenBot bot in AmeisenBots) if (bot.CharacterName == characterName) return true;
             return false;
-        }
-
-        private void ScanForWows()
-        {
-            List<AmeisenBot> AmeisenBotsNew = new List<AmeisenBot>();
-            foreach (WowProcess wowProcess in BotUtils.GetRunningWows(new Wotlk335a12340OffsetList()))
-            {
-                AmeisenBotsNew.Add(SetupAmeisenBot(wowProcess.Process));
-            }
-            AmeisenBots = AmeisenBotsNew;
-        }
-
-        private void AttachBot(AmeisenBot ameisenBot)
-        {
-            IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.BlackMagic, new Wotlk335a12340OffsetList());
-            IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient("127.0.0.1", 47110);
-            //IWowEventAdapter wowEventAdapter = new MemoryWowEventAdapter(wowActionExecutor);
-            ameisenBot.Attach(wowActionExecutor, pathfindingClient, null);
-        }
-
-        private AmeisenBot SetupAmeisenBot(Process wowProcess)
-        {
-            BlackMagic blackMagic = new BlackMagic(wowProcess.Id);
-            Wotlk335a12340OffsetList offsetList = new Wotlk335a12340OffsetList();
-
-            IAutologinProvider autologinProvider = new SimpleAutologinProvider();
-            IWowDataAdapter wowDataAdapter = new MemoryWowDataAdapter(blackMagic, offsetList);
-
-            return new AmeisenBot(blackMagic, wowDataAdapter, autologinProvider, wowProcess);
-        }
-
-        private void MainWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
-
-        private void ButtonClose_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            ViewUpdateTimer.Stop();
-            BotFleetTimer.Stop();
-
-            foreach (AmeisenBot ameisenBot in AmeisenBots)
-            {
-                ameisenBot.Detach();
-            }
-        }
-
-        private void ButtonMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-
-        private void ButtonSettings_Click(object sender, RoutedEventArgs e)
-        {
-            CheckForBotFleet();
         }
     }
 }

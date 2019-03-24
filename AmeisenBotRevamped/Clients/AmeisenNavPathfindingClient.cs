@@ -41,7 +41,8 @@ namespace AmeisenBotRevamped.Clients
                 catch { }
             }
 
-            IsConnected = TcpClient.Connected;
+            if (TcpClient != null && TcpClient.Client != null)
+                IsConnected = TcpClient.Connected;
         }
 
         public List<Vector3> GetPath(Vector3 start, Vector3 end, int mapId)
@@ -57,9 +58,9 @@ namespace AmeisenBotRevamped.Clients
             return JsonConvert.DeserializeObject<List<Vector3>>(pathJson);
         }
 
-        public bool IsInLineOfSight(Vector3 start, Vector3 end)
+        public bool IsInLineOfSight(Vector3 start, Vector3 end, int mapId)
         {
-            return true;
+            return GetPath(start, end, mapId).Count == 1;
         }
 
         public void Disconnect()
