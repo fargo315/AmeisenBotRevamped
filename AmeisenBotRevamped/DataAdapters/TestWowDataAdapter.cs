@@ -26,11 +26,25 @@ namespace AmeisenBotRevamped.DataAdapters
 
         public List<ulong> PartymemberGuids => new List<ulong>() { 0x2, 0x10 };
 
-        public ulong PartyLeaderGuid => 0x2;
+        public ulong PartyleaderGuid => 0x2;
 
         public OnGamestateChanged OnGamestateChanged { get; set; }
 
         public bool ObjectUpdatesEnabled => false;
+
+        public int ZoneId => 0;
+
+        public int ComboPoints => 0;
+
+        public int WowBuild => 12340;
+
+        public string ContinentName => "Trash";
+
+        public string LastErrorMessage => "You suck ";
+
+        public WowPosition ActivePlayerPosition => new WowPosition();
+
+        public string AccountName => "Schisch";
 
         public TestWowDataAdapter()
         {

@@ -20,10 +20,10 @@ namespace AmeisenBotRevamped.DataAdapters
         // - ActiveWowObjects [default every 500ms]
         // - IsWorldLoaded [default every 200ms]
 
-        private int ActiveWowObjectsWatchdogTime => 1000;
+        private int ActiveWowObjectsWatchdogTime => 500;
         private Timer ActiveWowObjectsWatchdog { get; set; }
 
-        private int IsWorldLoadedWatchdogTime => 200;
+        private int IsWorldLoadedWatchdogTime => 100;
         private Timer IsWorldLoadedWatchdog { get; set; }
         #endregion
 
@@ -43,7 +43,15 @@ namespace AmeisenBotRevamped.DataAdapters
         public ulong PlayerGuid => ReadUInt64(OffsetList.StaticPlayerGuid);
         public ulong TargetGuid => ReadUInt64(OffsetList.StaticTargetGuid);
         public ulong PetGuid => ReadUInt64(OffsetList.StaticPetGuid);
+        public int WowBuild => ReadInt(OffsetList.StaticWowBuild);
+        public string ContinentName => ReadString(OffsetList.StaticContinentName, 16);
         public int MapId => ReadInt(OffsetList.StaticMapId);
+        public int ZoneId => ReadInt(OffsetList.StaticZoneId);
+        public int ComboPoints => ReadInt(OffsetList.StaticComboPoints);
+        public string LastErrorMessage => ReadString(OffsetList.StaticErrorMessage, 64);
+        public string AccountName => ReadString(OffsetList.StaticAccountName, 16);
+
+        public WowPosition ActivePlayerPosition => (WowPosition)ReadObject(ReadUInt(OffsetList.StaticPlayerBase) + OffsetList.OffsetWowUnitPosition, typeof(WowPosition));
         #endregion
 
         #region Internal Properties
@@ -60,7 +68,7 @@ namespace AmeisenBotRevamped.DataAdapters
         public WowObjectManager ObjectManager { get; private set; }
 
         public List<ulong> PartymemberGuids => ReadPartymemberGuids();
-        public ulong PartyLeaderGuid => ReadPartyLeaderGuid();
+        public ulong PartyleaderGuid => ReadPartyLeaderGuid();
         public OnGamestateChanged OnGamestateChanged { get; set; }
         public bool ObjectUpdatesEnabled => ActiveWowObjectsWatchdog.Enabled;
         #endregion
@@ -85,6 +93,25 @@ namespace AmeisenBotRevamped.DataAdapters
             ObjectManager = new WowObjectManager(this);
 
             SetupWatchdogs();
+
+            EnableAutoloot();
+            EnableClickToMove();
+        }
+
+        private void EnableClickToMove()
+        {
+            uint ctmPointer = ReadUInt(OffsetList.StaticClickToMovePointer);
+            bool ctmEnabled = ReadInt(ctmPointer + OffsetList.OffsetClickToMoveEnabled) == 1;
+
+            if (!ctmEnabled) WriteInt(ctmPointer + OffsetList.OffsetClickToMoveEnabled, 1);
+        }
+
+        private void EnableAutoloot()
+        {
+            uint autolootPointer = ReadUInt(OffsetList.StaticAutoLootPointer);
+            bool autolootEnabled = ReadInt(autolootPointer + OffsetList.OffsetAutolootEnabled) == 1;
+
+            if (!autolootEnabled) WriteInt(autolootPointer + OffsetList.OffsetAutolootEnabled, 1);
         }
 
         public void Detach()
@@ -180,7 +207,7 @@ namespace AmeisenBotRevamped.DataAdapters
         private WowPlayer ReadWowPlayer(uint activeObject, WowObjectType wowObjectType)
         {
             WowUnit wowUnit = ReadWowUnit(activeObject, wowObjectType);
-            return new WowPlayer()
+            WowPlayer player = new WowPlayer()
             {
                 BaseAddress = activeObject,
                 DescriptorAddress = wowUnit.DescriptorAddress,
@@ -196,9 +223,17 @@ namespace AmeisenBotRevamped.DataAdapters
                 Energy = wowUnit.Energy,
                 MaxEnergy = wowUnit.MaxEnergy,
                 Level = wowUnit.Level,
-                Race = (WowRace)ReadByte(wowUnit.DescriptorAddress + OffsetList.DescriptorOffsetRace),
-                Class = (WowClass)ReadByte(OffsetList.StaticClass)
             };
+
+            if (wowUnit.Guid == PlayerGuid)
+            {
+                player.Exp = ReadInt(wowUnit.DescriptorAddress + OffsetList.DescriptorOffsetExp);
+                player.MaxExp = ReadInt(wowUnit.DescriptorAddress + OffsetList.DescriptorOffsetMaxExp);
+                player.Race = (WowRace)ReadByte(OffsetList.StaticRace);
+                player.Class = (WowClass)ReadByte(OffsetList.StaticClass);
+            }
+
+            return player;
         }
 
         private string ReadPlayerName(ulong guid)
@@ -355,6 +390,9 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             PlayerNameCache = new Dictionary<ulong, string>();
             UnitNameCache = new Dictionary<ulong, string>();
+
+            EnableAutoloot();
+            EnableClickToMove();
         }
 
         private ulong ReadUInt64(uint offset)
@@ -373,6 +411,15 @@ namespace AmeisenBotRevamped.DataAdapters
                 return BlackMagic.ReadInt(offset);
             }
             catch { CheckForGameCrashed(); return 0; }
+        }
+
+        private void WriteInt(uint offset, int value)
+        {
+            try
+            {
+                BlackMagic.WriteInt(offset, value);
+            }
+            catch { CheckForGameCrashed(); }
         }
 
         private uint ReadUInt(uint offset)

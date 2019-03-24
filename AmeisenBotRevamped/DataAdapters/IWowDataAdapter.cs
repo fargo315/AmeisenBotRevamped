@@ -1,6 +1,7 @@
 ﻿using AmeisenBotRevamped.DataAdapters.DataSets;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
+using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using System.Collections.Generic;
 
 namespace AmeisenBotRevamped.DataAdapters
@@ -12,10 +13,17 @@ namespace AmeisenBotRevamped.DataAdapters
         ulong PlayerGuid { get; }
         ulong TargetGuid { get; }
         ulong PetGuid { get; }
-        List<ulong> PartymemberGuids { get; }
-        ulong PartyLeaderGuid { get; }
-
         int MapId { get; }
+        int ZoneId { get; }
+        int ComboPoints { get; }
+        int WowBuild { get; }
+        string ContinentName { get; }
+        string LastErrorMessage { get; }
+        string AccountName { get; }
+
+        List<ulong> PartymemberGuids { get; }
+        ulong PartyleaderGuid { get; }
+        WowPosition ActivePlayerPosition { get; }
 
         BasicInfoDataSet BasicInfoDataSet { get; }
         WowObjectManager ObjectManager { get; }

@@ -81,7 +81,6 @@ namespace AmeisenBotRevamped.Gui
             RefreshActiveWows();
 
             ViewUpdateTimer.Start();
-            BotFleetTimer.Start();
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -104,6 +103,22 @@ namespace AmeisenBotRevamped.Gui
         private void ButtonSettings_Click(object sender, RoutedEventArgs e)
         {
             CheckForBotFleet();
+        }
+
+        private void ButtonToggleFleet_Click(object sender, RoutedEventArgs e)
+        {
+            if (BotFleetTimer.Enabled)
+            {
+                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFF9696"));
+                buttonToggleFleet.Content = "Fleet OFF";
+                BotFleetTimer.Stop();
+            }
+            else
+            {
+                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB4FF96"));
+                buttonToggleFleet.Content = "Fleet ON";
+                BotFleetTimer.Start();
+            }
         }
         #endregion
 
@@ -171,14 +186,14 @@ namespace AmeisenBotRevamped.Gui
                 AddBotToView(ameisenBot);
 
                 if (!ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
-                  AttachBot(ameisenBot);
+                    AttachBot(ameisenBot);
             }
         }
 
 
         private void AddBotToView(AmeisenBot ameisenBot)
         {
-            BotView botview = new BotView(ameisenBot, AttachBot);
+            BotView botview = new BotView(ameisenBot, Settings, AttachBot);
 
             if (!BotViews.Contains(botview))
             {

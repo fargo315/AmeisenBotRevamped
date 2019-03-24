@@ -2,8 +2,10 @@
 using AmeisenBotRevamped.Clients;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
+using AmeisenBotRevamped.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,10 +30,12 @@ namespace AmeisenBotRevamped.Gui.Views
 
         private AmeisenBot AmeisenBot { get; set; }
         private AttachBotFunction AttachBotFunc { get; set; }
+        private Settings Settings { get; set; }
 
-        public BotView(AmeisenBot ameisenBot, AttachBotFunction attachBotFunction)
+        public BotView(AmeisenBot ameisenBot, Settings settings, AttachBotFunction attachBotFunction)
         {
             AmeisenBot = ameisenBot;
+            Settings = settings;
             AttachBotFunc = attachBotFunction;
 
             InitializeComponent();
@@ -46,10 +50,12 @@ namespace AmeisenBotRevamped.Gui.Views
             if (AmeisenBot.Attached)
             {
                 buttonAttach.Content = "Detach";
+                buttonAttach.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB4FF96"));
             }
             else
             {
                 buttonAttach.Content = "Attach";
+                buttonAttach.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFF9696"));
             }
 
             ulong playerGuid = AmeisenBot.WowDataAdapter.PlayerGuid;
@@ -61,26 +67,39 @@ namespace AmeisenBotRevamped.Gui.Views
                 labelBotname.Content = AmeisenBot.CharacterName;
 
             labelBotrealm.Content = $"<{AmeisenBot.RealmName}>";
+            labelBotmapinfo.Content = $"<{AmeisenBot.WowDataAdapter.ContinentName}> <{AmeisenBot.WowDataAdapter.MapId}, {AmeisenBot.WowDataAdapter.ZoneId}>";
             labelBotgamestate.Content = $"<{AmeisenBot.WowDataAdapter.GameState.ToString()}>";
+            labelBotaccount.Content = $"<{AmeisenBot.WowDataAdapter.AccountName}>";
 
             if (AmeisenBot.StateMachine != null)
                 labelBotstate.Content = $"<{AmeisenBot.StateMachine.CurrentState.ToString()}>";
 
             if (player != null)
             {
-                labelBothealth.Content = $"Health: {player.Health}/{player.MaxHealth}";
+                labelBothealth.Content = $"Health: {BotUtils.BigValueToString(player.Health)}/{BotUtils.BigValueToString(player.MaxHealth)}";
 
                 if (player.MaxHealth > 0)
                     progressbarBothealth.Value = (player.Health / player.MaxHealth) * 100;
 
-                labelBotenergy.Content = $"Energy: {player.Energy}/{player.MaxEnergy}";
+                labelBotenergy.Content = $"Energy: {BotUtils.BigValueToString(player.Energy)}/{BotUtils.BigValueToString(player.MaxEnergy)}";
 
                 if (player.MaxEnergy > 0)
                     progressbarBotenergy.Value = (player.Energy / player.MaxEnergy) * 100;
 
+                labelBotexp.Content = $"Exp: {BotUtils.BigValueToString(player.Exp)}/{BotUtils.BigValueToString(player.MaxExp)}";
+
+                if (player.MaxExp > 0)
+                    progressbarBotexp.Value = (player.Exp / player.MaxExp) * 100;
+
                 labelBotlevel.Content = $"lvl. {player.Level}";
                 labelBotraceclass.Content = $"<{player.Race.ToString()}, {player.Class.ToString()}>";
-                labelBotdebug.Content = $"0x{player.BaseAddress.ToString("X")} => 0x{player.DescriptorAddress.ToString("X")}";
+                labelBotdebug.Content = $"0x{player.BaseAddress.ToString("X")}";
+
+                BitmapImage botBitmap = SearchForBotPicture();
+                if(botBitmap != null)
+                {
+                    botImage.Source = botBitmap;
+                }
 
                 switch (player.Class)
                 {
@@ -138,6 +157,26 @@ namespace AmeisenBotRevamped.Gui.Views
                         break;
                 }
             }
+        }
+
+        private BitmapImage SearchForBotPicture()
+        {
+            if (Directory.Exists(Settings.PictureFolder))
+            {
+                string pngPath = $"{Settings.PictureFolder}/{AmeisenBot.CharacterName.ToLower()}.png";
+                string jpgPath = $"{Settings.PictureFolder}/{AmeisenBot.CharacterName.ToLower()}.jpg";
+
+                if (File.Exists(pngPath))
+                {
+                    return new BitmapImage(new Uri(pngPath));
+                }
+                else if (File.Exists(jpgPath))
+                {
+                    return new BitmapImage(new Uri(jpgPath));
+                }
+            }
+
+            return null;
         }
 
         private void ButtonAttach_Click(object sender, RoutedEventArgs e)

@@ -52,5 +52,19 @@ namespace AmeisenBotRevamped.Utils
 
             return wows;
         }
+
+        public static string BigValueToString(double value)
+        {
+            if (value >= 100000000)
+            {
+                return $"{(int)value / 1000000}M";
+            }
+            else if (value >= 100000)
+            {
+                return $"{(int)value / 1000}K";
+            }
+
+            return $"{value}";
+        }
     }
 }

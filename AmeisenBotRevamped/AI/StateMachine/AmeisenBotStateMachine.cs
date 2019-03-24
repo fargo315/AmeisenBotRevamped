@@ -28,7 +28,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         internal WowObjectManager ObjectManager => WowDataAdapter.ObjectManager;
         internal IPathfindingClient PathfindingClient { get; set; }
 
-        public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 250)
+        public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 100)
         {
             BotStates = new Dictionary<Type, BotState> {
                 {typeof(BotStateIdle), new BotStateIdle(this) },
@@ -79,31 +79,50 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public bool IsUnitInFollowRange(WowUnit unitToFollow)
         {
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
-            WowPosition myPosition = wowPlayer.Position;
+            WowPosition myPosition = WowDataAdapter.ActivePlayerPosition;
 
             if (wowPlayer == null || unitToFollow == null) return false;
 
             double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
 
-            if (unitToFollow.Guid == WowDataAdapter.PartyLeaderGuid)
+            if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
             {
-                return distance >= UnitFollowThreshold
-                    && distance <= UnitFollowThresholdLeaderMax;
+                return distance >= UnitFollowThreshold;
             }
             else
             {
-                return distance >= UnitFollowThreshold
-                    && distance <= UnitFollowThresholdMax;
+                return distance >= UnitFollowThreshold;
+            }
+        }
+
+        public bool IsUnitInFollowMaxRange(WowUnit unitToFollow)
+        {
+            WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
+            WowPosition myPosition = WowDataAdapter.ActivePlayerPosition;
+
+            if (wowPlayer == null || unitToFollow == null) return false;
+
+            double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
+
+            if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
+            {
+                return distance <= UnitFollowThresholdLeaderMax;
+            }
+            else
+            {
+                return distance <= UnitFollowThresholdMax;
             }
         }
 
         public WowUnit FindUnitToFollow()
         {
+            WowUnit wowUnit = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PartyleaderGuid);
+            if (wowUnit != null && (IsUnitInFollowMaxRange(wowUnit) || IsUnitInFollowRange(wowUnit))) return wowUnit;
+
             foreach (ulong guid in WowDataAdapter.PartymemberGuids)
             {
-                WowUnit wowUnit = (WowUnit)ObjectManager.GetWowObjectByGuid(guid);
-
-                if (wowUnit != null && IsUnitInFollowRange(wowUnit)) return wowUnit;
+                wowUnit = (WowUnit)ObjectManager.GetWowObjectByGuid(guid);
+                if (wowUnit != null && IsUnitInFollowMaxRange(wowUnit) && IsUnitInFollowRange(wowUnit)) return wowUnit;
             }
             return null;
         }

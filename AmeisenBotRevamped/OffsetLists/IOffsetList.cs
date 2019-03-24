@@ -4,8 +4,14 @@
     {
         uint StaticPlayerName { get; }
         uint StaticRealmName { get; }
+        uint StaticAccountName { get; }
+        uint StaticWowBuild { get; }
+        uint StaticContinentName { get; }
+        uint StaticMapId { get; }
+        uint StaticZoneId { get; }
         uint StaticIsWorldLoaded { get; }
         uint StaticGameState { get; }
+        uint StaticErrorMessage { get; }
         uint StaticClientConnection { get; }
         uint StaticComboPoints { get; }
         uint StaticTickCount { get; }
@@ -13,8 +19,7 @@
         uint StaticRace { get; }
         uint StaticClass { get; }
 
-        uint StaticMapId { get; }
-
+        uint StaticPlayerBase { get; }
         uint StaticPlayerGuid { get; }
         uint StaticTargetGuid { get; }
         uint StaticPetGuid { get; }
@@ -27,6 +32,7 @@
         uint OffsetWowObjectGuid { get; }
         uint OffsetWowObjectDescriptor { get; }
         uint OffsetWowUnitPosition { get; }
+        uint OffsetGameObjectPosition { get; }
 
         uint DescriptorOffsetTargetGuid { get; }
         uint DescriptorOffsetLevel { get; }
@@ -48,6 +54,9 @@
         uint DescriptorOffsetRuneenergyGuid { get; }
         uint DescriptorOffsetMaxRuneenergyGuid { get; }
 
+        uint DescriptorOffsetExp{ get; }
+        uint DescriptorOffsetMaxExp { get; }
+
         uint DescriptorOffsetUnitFlags { get; }
         uint DescriptorOffsetUnitFlagsDynamic { get; }
 
@@ -60,6 +69,12 @@
         uint StaticEndSceneDevice { get; }
         uint EndSceneOffsetDevice { get; }
         uint EndSceneOffset { get; }
+
+        uint StaticAutoLootPointer { get; }
+        uint OffsetAutolootEnabled { get; }
+
+        uint StaticClickToMovePointer { get; }
+        uint OffsetClickToMoveEnabled { get; }
 
         uint StaticClickToMoveX { get; }
         uint StaticClickToMoveY { get; }

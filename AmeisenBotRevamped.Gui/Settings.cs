@@ -13,11 +13,13 @@ namespace AmeisenBotRevamped.Gui
 
         public string AmeisenNavmeshServerIp { get; set; }
         public int AmeisenNavmeshServerPort { get; set; }
+        public string PictureFolder { get; set; }
 
         public Settings()
         {
             WowExecutableFilePath = "";
             BotListFilePath = "";
+            PictureFolder = "";
 
             AmeisenNavmeshServerIp = "127.0.0.1";
             AmeisenNavmeshServerPort = 47110;

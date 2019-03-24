@@ -2,6 +2,7 @@
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace AmeisenBotRevamped.AI.StateMachine.States
@@ -16,9 +17,14 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
         public WowPosition ActiveTargetPosition { get; private set; }
         private WowPosition LastPosition { get; set; }
 
+        private float XOffset { get; set; }
+        private float YOffset { get; set; }
+
         public BotStateFollow(AmeisenBotStateMachine stateMachine)
         {
             StateMachine = stateMachine;
+            XOffset = 0;
+            YOffset = 0;
         }
 
         public override void Execute()
@@ -39,49 +45,59 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
                     return;
                 }
             }
-            else
+
+            ActiveTargetPosition = CurrentPath.Peek();
+            StateMachine.WowActionExecutor?.MoveToPosition(new WowPosition()
             {
-                ActiveTargetPosition = CurrentPath.Peek();
-                StateMachine.WowActionExecutor?.MoveToPosition(ActiveTargetPosition);
+                x = ActiveTargetPosition.x, //+ XOffset,
+                y = ActiveTargetPosition.y, //+ YOffset,
+                z = ActiveTargetPosition.z
+            });
 
-                WowPosition myPosition = player.Position;
-                if (BotMath.GetDistance(myPosition, CurrentPath.Peek()) < 2.5)
-                {
-                    CurrentPath.Dequeue();
-                }
-
-                double distanceTraveled = BotMath.GetDistance(myPosition, LastPosition);
-                if (distanceTraveled > 0 && distanceTraveled < 0.2)
-                {
-                    StateMachine.WowActionExecutor?.Jump();
-                }
-
-                LastPosition = myPosition;
+            // get position directly from memory
+            WowPosition myPosition = StateMachine.WowDataAdapter.ActivePlayerPosition;
+            if (BotMath.GetDistance(myPosition, CurrentPath.Peek()) < 6)
+            {
+                CurrentPath.Dequeue();
             }
+
+            double distanceTraveled = BotMath.GetDistance(myPosition, LastPosition);
+            if (distanceTraveled > 0 && distanceTraveled < 0.1)
+            {
+                float newX = (float)Math.Cos(myPosition.r + (Math.PI / 2)) + 4 + myPosition.x;
+                float newY = (float)Math.Sin(myPosition.r + (Math.PI / 2)) + 4 + myPosition.y;
+                StateMachine.WowActionExecutor?.MoveToPosition(new WowPosition() { x = newX, y = newY, z = myPosition.z });
+            }
+            else if (distanceTraveled > 0 && distanceTraveled < 0.2)
+            {
+                StateMachine.WowActionExecutor?.Jump();
+            }
+
+            LastPosition = myPosition;
         }
 
         private void UpdatePath()
         {
-            WowPosition myPosition = ((WowUnit)StateMachine.ObjectManager.GetWowObjectByGuid(StateMachine.WowDataAdapter.PlayerGuid)).Position;
-            Vector3 myPos = new Vector3(myPosition.x, myPosition.y, myPosition.z);
-            Vector3 targetPos = new Vector3(UnitToFollow.Position.x, UnitToFollow.Position.y, UnitToFollow.Position.z);
+            WowPosition myPosition = StateMachine.WowDataAdapter.ActivePlayerPosition;
+            Vector3 myPosAsVector = new Vector3(myPosition.x, myPosition.y, myPosition.z);
+            Vector3 targetPosAsVector = new Vector3(UnitToFollow.Position.x, UnitToFollow.Position.y, UnitToFollow.Position.z);
 
-            List<Vector3> waypoints = new List<Vector3> { targetPos };
+            List<Vector3> waypoints = new List<Vector3> { targetPosAsVector };
 
             if (StateMachine.PathfindingClient != null)
             {
-                waypoints = StateMachine.PathfindingClient.GetPath(myPos, targetPos, StateMachine.WowDataAdapter.MapId);
+                waypoints = StateMachine.PathfindingClient.GetPath(myPosAsVector, targetPosAsVector, StateMachine.WowDataAdapter.MapId);
             }
 
             foreach (Vector3 pos in waypoints)
             {
                 WowPosition wpos = new WowPosition(pos);
-                if ((pos.X != myPos.X && pos.Y != myPos.Y && pos.Z != myPos.Z) && !CurrentPath.Contains(wpos))
+                if ((pos.X != myPosAsVector.X && pos.Y != myPosAsVector.Y && pos.Z != myPosAsVector.Z) && !CurrentPath.Contains(wpos))
                     CurrentPath.Enqueue(wpos);
             }
 
-            if ((targetPos.X != myPos.X && targetPos.Y != myPos.Y && targetPos.Z != myPos.Z))
-                CurrentPath.Enqueue(new WowPosition(targetPos));
+            if ((targetPosAsVector.X != myPosAsVector.X && targetPosAsVector.Y != myPosAsVector.Y && targetPosAsVector.Z != myPosAsVector.Z))
+                CurrentPath.Enqueue(new WowPosition(targetPosAsVector));
         }
 
         public override void Exit()
@@ -92,6 +108,10 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Start()
         {
+            Random rnd = new Random();
+            if (XOffset == 0) XOffset = (float)rnd.NextDouble() * 2;
+            if (YOffset == 0) YOffset = (float)rnd.NextDouble() * 2;
+
             UnitToFollow = StateMachine.FindUnitToFollow();
             CurrentPath = new Queue<WowPosition>();
         }
