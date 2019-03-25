@@ -23,8 +23,8 @@ namespace AmeisenBotRevamped.ActionExecutors
         void Jump();
         void FaceUnit(WowPlayer player, WowPosition positionToFace);
         void SendKey(IntPtr vKey, int minDelay = 20, int maxDelay = 40);
-        void AttackTarget(ulong guid);
         void TargetGuid(ulong guid);
+        void AttackTarget();
         void CastSpell(string name, bool castOnSelf = false);
 
         void LuaDoString(string command);
@@ -34,5 +34,11 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         void InteractWithGuid(ulong guid, ClickToMoveType clickToMoveType = ClickToMoveType.Interact);
         void MoveToPosition(WowPosition targetPosition, ClickToMoveType clickToMoveType = ClickToMoveType.Move, float distance = 1.5f);
+
+        void AcceptPartyInvite();
+
+        void AcceptResurrect();
+
+        void AcceptSummon();
     }
 }

@@ -47,10 +47,8 @@ namespace AmeisenBotRevamped.ActionExecutors
             SetupEndsceneHook();
         }
 
-        public void AttackTarget(ulong guid)
-        {
-
-        }
+        public void AttackTarget()
+            => LuaDoString($"AttackTarget();");
 
         public void CastSpell(int spellId)
             => LuaDoString($"CastSpell({spellId});");
@@ -385,5 +383,11 @@ namespace AmeisenBotRevamped.ActionExecutors
         {
             DisposeHook();
         }
+
+        public void AcceptPartyInvite() => LuaDoString("AcceptGroup();");
+
+        public void AcceptResurrect() => LuaDoString("AcceptResurrect();");
+
+        public void AcceptSummon() => LuaDoString("ConfirmSummon();");
     }
 }

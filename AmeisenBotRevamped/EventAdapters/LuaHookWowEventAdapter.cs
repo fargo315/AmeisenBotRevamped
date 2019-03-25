@@ -16,6 +16,8 @@ namespace AmeisenBotRevamped.EventAdapters
         private Timer EventReaderTimer { get; set; }
         private IWowActionExecutor WowActionExecutor { get; set; }
 
+        private bool IsSetUp { get; set; }
+
         public LuaHookWowEventAdapter(IWowActionExecutor actionExecutor)
         {
             EventDictionary = new Dictionary<string, OnEventFired>();
@@ -24,17 +26,31 @@ namespace AmeisenBotRevamped.EventAdapters
             EventReaderTimer = new Timer(1000);
             EventReaderTimer.Elapsed += CEventReaderTimer;
 
-            SetupEventHook();
+            IsSetUp = false;
         }
 
-        public void Start() => EventReaderTimer.Start();
+        public void Start()
+        {
+            if (!IsSetUp)
+            {
+                IsSetUp = true;
+                SetupEventHook();
+            }
+            EventReaderTimer.Start();
+        }
         public void Stop() => EventReaderTimer.Stop();
         public bool Enabled => EventReaderTimer.Enabled;
 
         private void CEventReaderTimer(object sender, ElapsedEventArgs e)
         {
+            if (!IsSetUp)
+            {
+                IsSetUp = true;
+                SetupEventHook();
+            }
+
             // Unminified lua code can be found im my github repo "WowLuaStuff"
-            WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",';end end end end;abEventJson=abEventJson..']';abEventTable={};");
+            WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",'end end end end;abEventJson=abEventJson..']'abEventTable={}");
             string eventJson = WowActionExecutor.GetLocalizedText("abEventJson");
 
             List<RawEvent> rawEvents = new List<RawEvent>();

@@ -31,7 +31,13 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public void Stop() => StateMachineTimer.Stop();
         public bool Enabled => StateMachineTimer.Enabled;
 
-        public bool IsMeInCombat => ((WowPlayer)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid)).IsInCombat;
+        public bool IsMeInCombat()
+        {
+            WowPlayer player = ((WowPlayer)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid));
+            if (player != null)
+                return player.IsInCombat;
+            return false;
+        }
 
         public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 100)
         {

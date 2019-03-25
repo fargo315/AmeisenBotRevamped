@@ -29,5 +29,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
         {
 
         }
+
+        public override string ToString() => "Dead";
     }
 }

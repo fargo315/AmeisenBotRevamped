@@ -18,7 +18,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Execute()
         {
-            if(StateMachine.IsMeInCombat || StateMachine.IsPartyInCombat())
+            if(StateMachine.IsMeInCombat() || StateMachine.IsPartyInCombat())
             {
                 StateMachine.SwitchState(typeof(BotStateCombat));
                 return;

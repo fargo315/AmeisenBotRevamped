@@ -191,17 +191,6 @@ namespace AmeisenBotRevamped.Gui
         }
 
 
-        private void AddBotToView(AmeisenBot ameisenBot)
-        {
-            BotView botview = new BotView(ameisenBot, Settings, AttachBot);
-
-            if (!BotViews.Contains(botview))
-            {
-                BotViews.Add(botview);
-                mainWrappanel.Children.Add(botview);
-            }
-        }
-
         private AmeisenBot SetupAmeisenBot(Process wowProcess)
         {
             BlackMagic blackMagic = new BlackMagic(wowProcess.Id);
@@ -222,8 +211,19 @@ namespace AmeisenBotRevamped.Gui
             {
                 IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.BlackMagic, OffsetList);
                 IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient(Settings.AmeisenNavmeshServerIp, Settings.AmeisenNavmeshServerPort);
-                //IWowEventAdapter wowEventAdapter = new MemoryWowEventAdapter(wowActionExecutor);
-                ameisenBot.Attach(wowActionExecutor, pathfindingClient, null);
+                IWowEventAdapter wowEventAdapter = new LuaHookWowEventAdapter(wowActionExecutor);
+                ameisenBot.Attach(wowActionExecutor, pathfindingClient, wowEventAdapter);
+            }
+        }
+
+        private void AddBotToView(AmeisenBot ameisenBot)
+        {
+            BotView botview = new BotView(ameisenBot, Settings, AttachBot);
+
+            if (!BotViews.Contains(botview))
+            {
+                BotViews.Add(botview);
+                mainWrappanel.Children.Add(botview);
             }
         }
 

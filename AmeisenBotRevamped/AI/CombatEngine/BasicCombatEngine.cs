@@ -32,6 +32,9 @@ namespace AmeisenBotRevamped.AI.CombatEngine
                 ActiveTarget = SelectNewTarget();
                 return;
             }
+
+            WowActionExecutor.TargetGuid(ActiveTarget.Guid);
+            WowActionExecutor.AttackTarget();
         }
 
         public void Start()

@@ -8,6 +8,7 @@ using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AmeisenBotRevamped
@@ -45,15 +46,23 @@ namespace AmeisenBotRevamped
         public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter)
         {
             Attached = true;
-            WowActionExecutor = wowActionExecutor;
             WowPathfindingClient = wowPathfindingClient;
-            WowEventAdapter = wowEventAdapter;
-
             WowDataAdapter?.StartObjectUpdates();
-            StateMachine?.Start();
+
+            WowActionExecutor = wowActionExecutor;
+            WowActionExecutor.IsWorldLoaded = true;
+
+            WowEventAdapter = wowEventAdapter;
             WowEventAdapter?.Start();
+            WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
 
             StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient);
+            StateMachine?.Start();
+        }
+
+        private void OnPartyInvitation(long timestamp, List<string> args)
+        {
+            WowActionExecutor.AcceptPartyInvite();
         }
 
         public void Detach()

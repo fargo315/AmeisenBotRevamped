@@ -14,24 +14,26 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Execute()
         {
-            if (!StateMachine.IsMeInCombat && !StateMachine.IsPartyInCombat())
+            if (!StateMachine.IsMeInCombat() && !StateMachine.IsPartyInCombat())
             {
                 StateMachine.SwitchState(typeof(BotStateIdle));
                 return;
             }
 
-            CombatEngine.Execute();
+            CombatEngine?.Execute();
         }
 
         public override void Exit()
         {
-            CombatEngine.Exit();
+            CombatEngine?.Exit();
         }
 
         public override void Start()
         {
-            CombatEngine.Start();
             CombatEngine = new BasicCombatEngine(StateMachine.WowDataAdapter, StateMachine.WowActionExecutor);
+            CombatEngine?.Start();
         }
+
+        public override string ToString() => "Combat";
     }
 }
