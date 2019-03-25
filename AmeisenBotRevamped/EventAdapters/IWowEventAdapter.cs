@@ -1,4 +1,4 @@
-﻿using static AmeisenBotRevamped.EventAdapters.MemoryWowEventAdapter;
+﻿using static AmeisenBotRevamped.EventAdapters.LuaHookWowEventAdapter;
 
 namespace AmeisenBotRevamped.EventAdapters
 {

@@ -200,7 +200,9 @@ namespace AmeisenBotRevamped.DataAdapters
                 MaxHealth = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetMaxHealth),
                 Energy = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetEnergy),
                 MaxEnergy = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetMaxEnergy),
-                Level = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetLevel)
+                Level = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetLevel),
+                CurrentlyCastingSpellId = ReadInt(activeObject + OffsetList.OffsetCurrentlyCastingSpellId),
+                CurrentlyChannelingSpellId = ReadInt(activeObject + OffsetList.OffsetCurrentlyChannelingSpellId)
             };
         }
 
@@ -223,6 +225,8 @@ namespace AmeisenBotRevamped.DataAdapters
                 Energy = wowUnit.Energy,
                 MaxEnergy = wowUnit.MaxEnergy,
                 Level = wowUnit.Level,
+                CurrentlyCastingSpellId = wowUnit.CurrentlyCastingSpellId,
+                CurrentlyChannelingSpellId = wowUnit.CurrentlyChannelingSpellId
             };
 
             if (wowUnit.Guid == PlayerGuid)

@@ -101,5 +101,8 @@
         uint RaidOffsetPlayer { get; }
 
         uint StaticCharacterSlotSelected { get; }
+
+        uint OffsetCurrentlyCastingSpellId { get; }
+        uint OffsetCurrentlyChannelingSpellId { get; }
     }
 }

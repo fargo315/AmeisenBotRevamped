@@ -18,10 +18,16 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Execute()
         {
-            WowUnit unitToFollow = StateMachine.FindUnitToFollow();
-            if (StateMachine.IsMeSupposedToFollow(unitToFollow))
+            if(StateMachine.IsMeInCombat || StateMachine.IsPartyInCombat())
+            {
+                StateMachine.SwitchState(typeof(BotStateCombat));
+                return;
+            }
+
+            if (StateMachine.IsMeSupposedToFollow(StateMachine.FindUnitToFollow()))
             {
                 StateMachine.SwitchState(typeof(BotStateFollow));
+                return;
             }
         }
 

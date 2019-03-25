@@ -58,8 +58,14 @@
     <Compile Include="ActionExecutors\IWowActionExecutor.cs" />
     <Compile Include="ActionExecutors\MemoryWowActionExecutor.cs" />
     <Compile Include="ActionExecutors\SafeNativeMethods.cs" />
+    <Compile Include="AI\CombatEngine\BasicCombatEngine.cs" />
+    <Compile Include="AI\CombatEngine\ICombatEngine.cs" />
+    <Compile Include="AI\CombatEngine\Structs\Spell.cs" />
     <Compile Include="AI\StateMachine\AmeisenBotStateMachine.cs" />
+    <Compile Include="AI\StateMachine\States\BotStateCombat.cs" />
+    <Compile Include="AI\StateMachine\States\BotStateDead.cs" />
     <Compile Include="AI\StateMachine\States\BotStateFollow.cs" />
+    <Compile Include="AI\StateMachine\States\BotStateGhost.cs" />
     <Compile Include="AI\StateMachine\States\BotStateIdle.cs" />
     <Compile Include="AI\StateMachine\States\BotState.cs" />
     <Compile Include="AmeisenBot.cs" />
@@ -75,7 +81,7 @@
     <Compile Include="DataAdapters\MemoryWowDataAdapter.cs" />
     <Compile Include="DataAdapters\TestWowDataAdapter.cs" />
     <Compile Include="EventAdapters\IWowEventAdapter.cs" />
-    <Compile Include="EventAdapters\MemoryWowEventAdapter.cs" />
+    <Compile Include="EventAdapters\LuaHookWowEventAdapter.cs" />
     <Compile Include="EventAdapters\Structs\RawEvent.cs" />
     <Compile Include="EventAdapters\WowEvents.cs" />
     <Compile Include="ObjectManager\WowObjectManager.cs" />

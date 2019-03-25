@@ -19,8 +19,6 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public double UnitFollowThresholdLeaderMax => 120.0;
 
         public BotState CurrentState { get; private set; }
-
-        private Timer StateMachineTimer { get; set; }
         private Dictionary<Type, BotState> BotStates { get; set; }
 
         internal IWowActionExecutor WowActionExecutor { get; set; }
@@ -28,11 +26,21 @@ namespace AmeisenBotRevamped.AI.StateMachine
         internal WowObjectManager ObjectManager => WowDataAdapter.ObjectManager;
         internal IPathfindingClient PathfindingClient { get; set; }
 
+        private Timer StateMachineTimer { get; set; }
+        public void Start() => StateMachineTimer.Start();
+        public void Stop() => StateMachineTimer.Stop();
+        public bool Enabled => StateMachineTimer.Enabled;
+
+        public bool IsMeInCombat => ((WowPlayer)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid)).IsInCombat;
+
         public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 100)
         {
             BotStates = new Dictionary<Type, BotState> {
                 {typeof(BotStateIdle), new BotStateIdle(this) },
-                {typeof(BotStateFollow), new BotStateFollow(this) }
+                {typeof(BotStateFollow), new BotStateFollow(this) },
+                {typeof(BotStateCombat), new BotStateCombat(this) },
+                {typeof(BotStateDead), new BotStateDead(this) },
+                {typeof(BotStateGhost), new BotStateGhost(this) }
             };
 
             PathfindingClient = pathfindingClient;
@@ -53,10 +61,6 @@ namespace AmeisenBotRevamped.AI.StateMachine
             StateMachineTimer.Dispose();
         }
 
-        public void Start() => StateMachineTimer.Start();
-        public void Stop() => StateMachineTimer.Stop();
-        public bool Enabled => StateMachineTimer.Enabled;
-
         private void CStateMachineUpdate(object sender, ElapsedEventArgs e)
         {
             CurrentState.Execute();
@@ -72,7 +76,11 @@ namespace AmeisenBotRevamped.AI.StateMachine
 
         public bool IsMeSupposedToFollow(WowUnit unitToFollow)
         {
-            if (unitToFollow == null) return false;
+            if (unitToFollow == null)
+            {
+                return false;
+            }
+
             return IsUnitInFollowRange(unitToFollow);
         }
 
@@ -81,7 +89,10 @@ namespace AmeisenBotRevamped.AI.StateMachine
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
             WowPosition myPosition = wowPlayer.Position;
 
-            if (wowPlayer == null || unitToFollow == null) return false;
+            if (wowPlayer == null || unitToFollow == null)
+            {
+                return false;
+            }
 
             double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
 
@@ -100,7 +111,10 @@ namespace AmeisenBotRevamped.AI.StateMachine
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
             WowPosition myPosition = wowPlayer.Position;
 
-            if (wowPlayer == null || unitToFollow == null) return false;
+            if (wowPlayer == null || unitToFollow == null)
+            {
+                return false;
+            }
 
             double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
 
@@ -117,14 +131,36 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public WowUnit FindUnitToFollow()
         {
             WowUnit wowUnit = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PartyleaderGuid);
-            if (wowUnit != null && (IsUnitInFollowMaxRange(wowUnit) || IsUnitInFollowRange(wowUnit))) return wowUnit;
+            if (wowUnit != null && (IsUnitInFollowMaxRange(wowUnit) || IsUnitInFollowRange(wowUnit)))
+            {
+                return wowUnit;
+            }
 
             foreach (ulong guid in WowDataAdapter.PartymemberGuids)
             {
                 wowUnit = (WowUnit)ObjectManager.GetWowObjectByGuid(guid);
-                if (wowUnit != null && IsUnitInFollowMaxRange(wowUnit) && IsUnitInFollowRange(wowUnit)) return wowUnit;
+                if (wowUnit != null && IsUnitInFollowMaxRange(wowUnit) && IsUnitInFollowRange(wowUnit))
+                {
+                    return wowUnit;
+                }
             }
             return null;
+        }
+
+        public bool IsPartyInCombat()
+        {
+            foreach (WowUnit unit in ObjectManager.WowUnits)
+            {
+                if (WowDataAdapter.PartymemberGuids.Contains(unit.Guid))
+                {
+                    if (unit.IsInCombat)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

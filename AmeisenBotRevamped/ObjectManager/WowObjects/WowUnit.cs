@@ -22,6 +22,9 @@ namespace AmeisenBotRevamped.ObjectManager.WowObjects
         public BitVector32 UnitFlags { get; set; }
         public BitVector32 UnitFlagsDynamic { get; set; }
 
+        public int CurrentlyCastingSpellId { get; set; }
+        public int CurrentlyChannelingSpellId { get; set; }
+
         public bool IsInCombat => UnitFlags[(int)Enums.UnitFlags.Combat];
         public bool IsSitting => UnitFlags[(int)Enums.UnitFlags.Sitting];
         public bool IsTotem => UnitFlags[(int)Enums.UnitFlags.Totem];

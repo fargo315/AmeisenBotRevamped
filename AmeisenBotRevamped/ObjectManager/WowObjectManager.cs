@@ -19,6 +19,10 @@ namespace AmeisenBotRevamped.ObjectManager
             set { lock (QueryLock) { wowObjects = value; } }
         }
 
+        public List<WowUnit> WowUnits => wowObjects.OfType<WowUnit>().ToList();
+
+        public List<WowPlayer> WowPlayers => wowObjects.OfType<WowPlayer>().ToList();
+
         public WowObjectManager(IWowDataAdapter wowDataAdapter)
         {
             WowDataAdapter = wowDataAdapter;

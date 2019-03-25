@@ -101,5 +101,8 @@
         public uint RaidOffsetPlayer => 0x50;
 
         public uint StaticCharacterSlotSelected => 0x6C436C;
+
+        public uint OffsetCurrentlyCastingSpellId => 0xA6C;
+        public uint OffsetCurrentlyChannelingSpellId => 0xA80;
     }
 }

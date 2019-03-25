@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace AmeisenBotRevamped.EventAdapters
 {
-    public class MemoryWowEventAdapter : IWowEventAdapter
+    public class LuaHookWowEventAdapter : IWowEventAdapter
     {
         public delegate void OnEventFired(long timestamp, List<string> args);
 
@@ -16,7 +16,7 @@ namespace AmeisenBotRevamped.EventAdapters
         private Timer EventReaderTimer { get; set; }
         private IWowActionExecutor WowActionExecutor { get; set; }
 
-        public MemoryWowEventAdapter(IWowActionExecutor actionExecutor)
+        public LuaHookWowEventAdapter(IWowActionExecutor actionExecutor)
         {
             EventDictionary = new Dictionary<string, OnEventFired>();
             WowActionExecutor = actionExecutor;
@@ -34,7 +34,7 @@ namespace AmeisenBotRevamped.EventAdapters
         private void CEventReaderTimer(object sender, ElapsedEventArgs e)
         {
             // Unminified lua code can be found im my github repo "WowLuaStuff"
-            WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",'end end end end;abEventJson=abEventJson..']'abEventTable={}");
+            WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",';end end end end;abEventJson=abEventJson..']';abEventTable={};");
             string eventJson = WowActionExecutor.GetLocalizedText("abEventJson");
 
             List<RawEvent> rawEvents = new List<RawEvent>();
@@ -67,7 +67,7 @@ namespace AmeisenBotRevamped.EventAdapters
             }
         }
 
-        ~MemoryWowEventAdapter()
+        ~LuaHookWowEventAdapter()
         {
             WowActionExecutor.LuaDoString($"abFrame:UnregisterAllEvents(); abFrame:SetScript(\"OnEvent\", nil);");
             EventReaderTimer.Stop();

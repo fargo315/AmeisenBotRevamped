@@ -29,6 +29,12 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Execute()
         {
+            if (StateMachine.IsMeInCombat || StateMachine.IsPartyInCombat())
+            {
+                StateMachine.SwitchState(typeof(BotStateCombat));
+                return;
+            }
+
             WowUnit player = ((WowUnit)StateMachine.ObjectManager.GetWowObjectByGuid(StateMachine.WowDataAdapter.PlayerGuid));
 
             if (UnitToFollow == null || UnitToFollow == player || !StateMachine.IsUnitInFollowRange(UnitToFollow))
