@@ -4,8 +4,8 @@
     {
         None = 0,
         Sitting = 0x1,
+        NotAttackable = 0x2,
         Totem = 0x10,
-        NotAttackable = 0x100,
         Looting = 0x400,
         PetInCombat = 0x800,
         PvpFlagged = 0x1000,

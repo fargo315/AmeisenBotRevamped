@@ -15,7 +15,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine
     public class BasicCombatEngine : ICombatEngine
     {
         public WowUnit ActiveTarget { get; private set; }
-        public List<WowUnit> AvaiableTargets => WowDataAdapter.ObjectManager.WowUnits.Where(unit => unit.IsInCombat && unit.IsTaggedByMe).ToList();
+        public List<WowUnit> AvaiableTargets => WowDataAdapter.ObjectManager.WowUnits.Where(unit => unit.IsInCombat).ToList();
 
         private IWowDataAdapter WowDataAdapter { get; set; }
         private IWowActionExecutor WowActionExecutor { get; set; }
@@ -47,6 +47,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         public void Start()
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tStaring Combat Engine");
             ActiveTarget = null;
             AvaiableSpells = ReadAvaiableSpells();
         }

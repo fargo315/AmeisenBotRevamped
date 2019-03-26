@@ -61,6 +61,9 @@ namespace AmeisenBotRevamped.Gui.Views
             ulong playerGuid = AmeisenBot.WowDataAdapter.PlayerGuid;
             WowPlayer player = (WowPlayer)AmeisenBot.ObjectManager.GetWowObjectByGuid(playerGuid);
 
+            ulong targetGuid = AmeisenBot.WowDataAdapter.TargetGuid;
+            WowUnit target = (WowUnit)AmeisenBot.ObjectManager.GetWowObjectByGuid(targetGuid);
+
             if (AmeisenBot.CharacterName == "")
                 labelBotname.Content = "Not logged in";
             else
@@ -93,10 +96,12 @@ namespace AmeisenBotRevamped.Gui.Views
 
                 labelBotlevel.Content = $"lvl. {player.Level}";
                 labelBotraceclass.Content = $"<{player.Race.ToString()}, {player.Class.ToString()}>";
-                labelBotdebug.Content = $"0x{player.BaseAddress.ToString("X")}";
+
+                if (target != null)
+                    labelBotdebug.Content = $"0x{target.BaseAddress.ToString("X")}";
 
                 BitmapImage botBitmap = SearchForBotPicture();
-                if(botBitmap != null)
+                if (botBitmap != null)
                 {
                     botImage.Source = botBitmap;
                 }

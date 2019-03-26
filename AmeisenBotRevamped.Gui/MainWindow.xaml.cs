@@ -49,7 +49,7 @@ namespace AmeisenBotRevamped.Gui
         {
             InitializeComponent();
 
-            AmeisenBotLogger.Instance.ActiveLogLevel = LogLevel.Verbose;
+            AmeisenBotLogger.Instance.ActiveLogLevel = LogLevel.Debug;
             AmeisenBotLogger.Instance.Start();
             AmeisenBotLogger.Instance.Log("AmeisenBotGui loading...");
 
