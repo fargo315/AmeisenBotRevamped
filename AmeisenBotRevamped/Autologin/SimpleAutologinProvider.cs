@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using AmeisenBotRevamped.Autologin.Structs;
+﻿using AmeisenBotRevamped.Autologin.Structs;
+using AmeisenBotRevamped.Logging;
+using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.OffsetLists;
 using Magic;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace AmeisenBotRevamped.Autologin
 {
@@ -62,14 +60,19 @@ namespace AmeisenBotRevamped.Autologin
                     count++;
                 }
             }
-            catch { }
+            catch (Exception e)
+            {
+                AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tCrash at Login: \n{e.ToString()}", LogLevel.Error);
+            }
 
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tLogin successful...", LogLevel.Verbose);
             LoginInProgress = false;
             LoginInProgressCharactername = "";
         }
 
         private void HandleLogin(BlackMagic blackMagic, Process process, WowAccount wowAccount)
         {
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Login into account: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
             foreach (char c in wowAccount.Username)
             {
                 SendKeyToProcess(process, c, char.IsUpper(c));
@@ -104,6 +107,7 @@ namespace AmeisenBotRevamped.Autologin
 
         private void HandleCharSelect(BlackMagic blackMagic, Process process, WowAccount wowAccount)
         {
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Characterselection: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
             int currentSlot = blackMagic.ReadInt((uint)blackMagic.MainModule.BaseAddress + OffsetList.StaticCharacterSlotSelected);
 
             while (currentSlot != wowAccount.CharacterSlot)

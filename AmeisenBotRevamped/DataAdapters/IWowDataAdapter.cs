@@ -39,5 +39,7 @@ namespace AmeisenBotRevamped.DataAdapters
         void StopObjectUpdates();
 
         void ClearCaches();
+
+        WowPosition GetPosition(uint baseAddress);
     }
 }

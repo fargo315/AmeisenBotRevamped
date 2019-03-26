@@ -4,10 +4,10 @@ using AmeisenBotRevamped.Autologin;
 using AmeisenBotRevamped.Clients;
 using AmeisenBotRevamped.DataAdapters;
 using AmeisenBotRevamped.EventAdapters;
+using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -41,6 +41,8 @@ namespace AmeisenBotRevamped
             WowDataAdapter = wowDataAdapter;
             WowDataAdapter.OnGamestateChanged = COnGamestateChanged;
             BlackMagic = blackMagic;
+
+            AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }
 
         public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter)
@@ -48,16 +50,23 @@ namespace AmeisenBotRevamped
             Attached = true;
             WowPathfindingClient = wowPathfindingClient;
             WowDataAdapter?.StartObjectUpdates();
+            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted ObjectUpdates...");
 
             WowActionExecutor = wowActionExecutor;
             WowActionExecutor.IsWorldLoaded = true;
+            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted ActionExecutor...");
 
             WowEventAdapter = wowEventAdapter;
             WowEventAdapter?.Start();
+            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted EventAdapter...");
+
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
 
             StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient);
             StateMachine?.Start();
+            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted StateMachine...");
+
+            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tAmeisenBot attached...");
         }
 
         private void OnPartyInvitation(long timestamp, List<string> args)

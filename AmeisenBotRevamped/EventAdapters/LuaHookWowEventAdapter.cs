@@ -1,5 +1,6 @@
 ﻿using AmeisenBotRevamped.ActionExecutors;
 using AmeisenBotRevamped.EventAdapters.Structs;
+using AmeisenBotRevamped.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
@@ -31,6 +32,7 @@ namespace AmeisenBotRevamped.EventAdapters
 
         public void Start()
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tStarting EventHook...");
             if (!IsSetUp)
             {
                 IsSetUp = true;
@@ -38,7 +40,13 @@ namespace AmeisenBotRevamped.EventAdapters
             }
             EventReaderTimer.Start();
         }
-        public void Stop() => EventReaderTimer.Stop();
+        public void Stop()
+        {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tStopping EventHook...");
+            WowActionExecutor.LuaDoString($"abFrame:UnregisterAllEvents(); abFrame:SetScript(\"OnEvent\", nil);");
+            EventReaderTimer.Stop();
+        }
+
         public bool Enabled => EventReaderTimer.Enabled;
 
         private void CEventReaderTimer(object sender, ElapsedEventArgs e)
@@ -73,6 +81,7 @@ namespace AmeisenBotRevamped.EventAdapters
                     {
                         if (EventDictionary.ContainsKey(rawEvent.@event))
                         {
+                            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\t{EventDictionary[rawEvent.@event].Method.Name}({rawEvent.time}, {JsonConvert.SerializeObject(rawEvent.args)})");
                             EventDictionary[rawEvent.@event].Invoke(rawEvent.time, rawEvent.args);
                         }
                     }
@@ -85,12 +94,12 @@ namespace AmeisenBotRevamped.EventAdapters
 
         ~LuaHookWowEventAdapter()
         {
-            WowActionExecutor.LuaDoString($"abFrame:UnregisterAllEvents(); abFrame:SetScript(\"OnEvent\", nil);");
-            EventReaderTimer.Stop();
+            Stop();
         }
 
         private void SetupEventHook()
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tPreparing EventHook...");
             StringBuilder luaStuff = new StringBuilder();
             luaStuff.Append("abFrame = CreateFrame(\"FRAME\", \"AbotEventFrame\") ");
             luaStuff.Append("abEventTable = {} ");
@@ -103,12 +112,14 @@ namespace AmeisenBotRevamped.EventAdapters
 
         public void Subscribe(string eventName, OnEventFired onEventFired)
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tSubscribed to \"{eventName}\"");
             WowActionExecutor.LuaDoString($"abFrame:RegisterEvent(\"{eventName}\");");
             EventDictionary.Add(eventName, onEventFired);
         }
 
         public void Unsubscribe(string eventName)
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tUnsubscribed from \"{eventName}\"");
             WowActionExecutor.LuaDoString($"abFrame:UnregisterEvent(\"{eventName}\");");
             EventDictionary.Remove(eventName);
         }

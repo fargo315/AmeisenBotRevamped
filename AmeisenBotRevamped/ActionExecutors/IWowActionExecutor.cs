@@ -3,6 +3,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 {
     public interface IWowActionExecutor
     {
+        int ProcessId { get; }
         bool IsWorldLoaded { get; set; }
 
         void AntiAfk();
@@ -36,9 +38,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         void MoveToPosition(WowPosition targetPosition, ClickToMoveType clickToMoveType = ClickToMoveType.Move, float distance = 1.5f);
 
         void AcceptPartyInvite();
-
         void AcceptResurrect();
-
         void AcceptSummon();
     }
 }

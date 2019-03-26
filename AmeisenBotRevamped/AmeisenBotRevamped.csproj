@@ -60,6 +60,8 @@
     <Compile Include="ActionExecutors\SafeNativeMethods.cs" />
     <Compile Include="AI\CombatEngine\BasicCombatEngine.cs" />
     <Compile Include="AI\CombatEngine\ICombatEngine.cs" />
+    <Compile Include="AI\CombatEngine\MovementProvider\BasicMeleeMovementProvider.cs" />
+    <Compile Include="AI\CombatEngine\MovementProvider\IMovementProvider.cs" />
     <Compile Include="AI\CombatEngine\Structs\Spell.cs" />
     <Compile Include="AI\StateMachine\AmeisenBotStateMachine.cs" />
     <Compile Include="AI\StateMachine\States\BotStateCombat.cs" />
@@ -84,6 +86,9 @@
     <Compile Include="EventAdapters\LuaHookWowEventAdapter.cs" />
     <Compile Include="EventAdapters\Structs\RawEvent.cs" />
     <Compile Include="EventAdapters\WowEvents.cs" />
+    <Compile Include="Logging\AmeisenBotLogger.cs" />
+    <Compile Include="Logging\Enums\LogLevel.cs" />
+    <Compile Include="Logging\Objects\LogEntry.cs" />
     <Compile Include="ObjectManager\WowObjectManager.cs" />
     <Compile Include="ObjectManager\WowObjects\Enums\UnitFlags.cs" />
     <Compile Include="ObjectManager\WowObjects\Enums\UnitFlagsDynamic.cs" />

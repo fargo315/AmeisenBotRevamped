@@ -1,5 +1,6 @@
 ﻿using AmeisenBotRevamped.AI.StateMachine.States;
 using AmeisenBotRevamped.DataAdapters;
+using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +23,8 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
         [TestMethod()]
         public void AmeisenBotStateMachineTransitionIdleToFollowTest()
         {
-            AmeisenBot ameisenBot = new AmeisenBot(null, new TestWowDataAdapter(), null, null);
+            TestWowDataAdapter testWowDataAdapter = new TestWowDataAdapter();
+            AmeisenBot ameisenBot = new AmeisenBot(null, testWowDataAdapter, null, null);
             AmeisenBotStateMachine stateMachine = new AmeisenBotStateMachine(ameisenBot.WowDataAdapter, null, null);
 
             Assert.IsTrue(stateMachine.CurrentState is BotStateIdle);
@@ -30,6 +32,13 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
             Assert.IsTrue(stateMachine.CurrentState is BotStateFollow);
             stateMachine.CurrentState.Execute();
             ((BotStateFollow)stateMachine.CurrentState).UnitToFollow = null;
+            stateMachine.CurrentState.Execute();
+            Assert.IsTrue(stateMachine.CurrentState is BotStateIdle);
+            testWowDataAdapter.SetMeInCombat(true);
+            stateMachine.CurrentState.Execute();
+            Assert.IsTrue(stateMachine.CurrentState is BotStateCombat);
+            stateMachine.CurrentState.Execute();
+            testWowDataAdapter.SetMeInCombat(false);
             stateMachine.CurrentState.Execute();
             Assert.IsTrue(stateMachine.CurrentState is BotStateIdle);
         }

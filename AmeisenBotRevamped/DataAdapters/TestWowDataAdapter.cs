@@ -52,7 +52,18 @@ namespace AmeisenBotRevamped.DataAdapters
 
             ObjectManager = new WowObjectManager(this)
             {
-                WowObjects = new List<WowObject>
+                WowObjects = GetFakeObjects(false)
+        };
+        }
+
+        public void SetMeInCombat(bool v)
+        {
+            ObjectManager.WowObjects = GetFakeObjects(v);
+        }
+
+        private List<WowObject> GetFakeObjects(bool isMeInCombat)
+        {
+            return new List<WowObject>
                 {
                     new WowPlayer(){
                         BaseAddress = 0x0,
@@ -74,7 +85,7 @@ namespace AmeisenBotRevamped.DataAdapters
                             z = 0,
                             r = 0,
                         },
-                        UnitFlags = new BitVector32(),
+                        UnitFlags = isMeInCombat ? new BitVector32((int)UnitFlags.Combat) : new BitVector32(),
                         UnitFlagsDynamic = new BitVector32()
                     },
                     new WowPlayer(){
@@ -127,8 +138,7 @@ namespace AmeisenBotRevamped.DataAdapters
                         Guid = 0x50,
                         Type = WowObjectType.Gameobject
                     },
-                }
-            };
+                };
         }
 
         public void SetIsWorldLoaded(bool v)
@@ -150,6 +160,11 @@ namespace AmeisenBotRevamped.DataAdapters
         public void ClearCaches()
         {
 
+        }
+
+        public WowPosition GetPosition(uint baseAddress)
+        {
+            return new WowPosition();
         }
     }
 }

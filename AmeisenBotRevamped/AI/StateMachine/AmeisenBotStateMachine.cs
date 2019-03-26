@@ -2,6 +2,7 @@
 using AmeisenBotRevamped.AI.StateMachine.States;
 using AmeisenBotRevamped.Clients;
 using AmeisenBotRevamped.DataAdapters;
+using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
@@ -30,14 +31,6 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public void Start() => StateMachineTimer.Start();
         public void Stop() => StateMachineTimer.Stop();
         public bool Enabled => StateMachineTimer.Enabled;
-
-        public bool IsMeInCombat()
-        {
-            WowPlayer player = ((WowPlayer)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid));
-            if (player != null)
-                return player.IsInCombat;
-            return false;
-        }
 
         public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 100)
         {
@@ -75,6 +68,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
 
         public void SwitchState(Type newType)
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tSwitching state from \"{CurrentState}\" => \"{BotStates[newType]}\"");
             CurrentState.Exit();
             CurrentState = BotStates[newType];
             CurrentState.Start();
@@ -151,6 +145,14 @@ namespace AmeisenBotRevamped.AI.StateMachine
                 }
             }
             return null;
+        }
+
+        public bool IsMeInCombat()
+        {
+            WowPlayer player = ((WowPlayer)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid));
+            if (player != null)
+                return player.IsInCombat;
+            return false;
         }
 
         public bool IsPartyInCombat()

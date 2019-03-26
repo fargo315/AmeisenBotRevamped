@@ -1,6 +1,9 @@
 ﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
 using AmeisenBotRevamped.AI.CombatEngine.Structs;
 using AmeisenBotRevamped.DataAdapters;
+using AmeisenBotRevamped.Logging;
+using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -16,11 +19,13 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         private IWowDataAdapter WowDataAdapter { get; set; }
         private IWowActionExecutor WowActionExecutor { get; set; }
+        private IMovementProvider MovementProvider { get; set; }
 
         private List<Spell> AvaiableSpells { get; set; }
 
         public BasicCombatEngine(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor)
         {
+            MovementProvider = new BasicMeleeMovementProvider();
             WowDataAdapter = wowDataAdapter;
             WowActionExecutor = wowActionExecutor;
         }
@@ -30,8 +35,11 @@ namespace AmeisenBotRevamped.AI.CombatEngine
             if (!IsUnitValid(ActiveTarget))
             {
                 ActiveTarget = SelectNewTarget();
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tNew ActiveTarget is: {ActiveTarget?.Name}");
                 return;
             }
+
+            MovementProvider.GetPositionToMoveTo(WowDataAdapter.ActivePlayerPosition, WowDataAdapter.GetPosition(ActiveTarget.BaseAddress));
 
             WowActionExecutor.TargetGuid(ActiveTarget.Guid);
             WowActionExecutor.AttackTarget();
@@ -80,8 +88,10 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         private List<Spell> ReadAvaiableSpells()
         {
-            WowActionExecutor.LuaDoString("abotSpellResult='['tabCount=GetNumSpellTabs()for a=1,tabCount do tabName,tabTexture,tabOffset,numEntries=GetSpellTabInfo(a)for b=tabOffset+1,tabOffset+numEntries do abSpellName,abSpellRank=GetSpellName(b,\"BOOKTYPE_SPELL\")if abSpellName then abName,abRank,_,abCosts,_,_,abCastTime,abMinRange,abMaxRange=GetSpellInfo(abSpellName,abSpellRank)abotSpellResult=abotSpellResult..'{'..'\"spellbookName\": \"'..tostring(tabName or 0)..'\",'..'\"spellbookId\": \"'..tostring(a or 0)..'\",'..'\"name\": \"'..tostring(abSpellName or 0)..'\",'..'\"rank\": \"'..tostring(abRank or 0)..'\",'..'\"castTime\": \"'..tostring(abCastTime or 0)..'\",'..'\"minRange\": \"'..tostring(abMinRange or 0)..'\",'..'\"maxRange\": \"'..tostring(abMaxRange or 0)..'\",'..'\"costs\": \"'..tostring(abCosts or 0)..'\"'..'}'if a<tabCount or b<tabOffset+numEntries then abotSpellResult=abotSpellResult..','end end end end;abotSpellResult=abotSpellResult..']'");
-            string result = WowActionExecutor.GetLocalizedText("abotSpellResult");
+            WowActionExecutor?.LuaDoString("abotSpellResult='['tabCount=GetNumSpellTabs()for a=1,tabCount do tabName,tabTexture,tabOffset,numEntries=GetSpellTabInfo(a)for b=tabOffset+1,tabOffset+numEntries do abSpellName,abSpellRank=GetSpellName(b,\"BOOKTYPE_SPELL\")if abSpellName then abName,abRank,_,abCosts,_,_,abCastTime,abMinRange,abMaxRange=GetSpellInfo(abSpellName,abSpellRank)abotSpellResult=abotSpellResult..'{'..'\"spellbookName\": \"'..tostring(tabName or 0)..'\",'..'\"spellbookId\": \"'..tostring(a or 0)..'\",'..'\"name\": \"'..tostring(abSpellName or 0)..'\",'..'\"rank\": \"'..tostring(abRank or 0)..'\",'..'\"castTime\": \"'..tostring(abCastTime or 0)..'\",'..'\"minRange\": \"'..tostring(abMinRange or 0)..'\",'..'\"maxRange\": \"'..tostring(abMaxRange or 0)..'\",'..'\"costs\": \"'..tostring(abCosts or 0)..'\"'..'}'if a<tabCount or b<tabOffset+numEntries then abotSpellResult=abotSpellResult..','end end end end;abotSpellResult=abotSpellResult..']'");
+            string result = WowActionExecutor?.GetLocalizedText("abotSpellResult");
+
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tAvailable spells: {result}", LogLevel.Verbose);
 
             List<Spell> spells;
             try
@@ -95,8 +105,9 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         private bool CastSpell(Spell spell, bool onSelf = false)
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCasting spell \"{spell}\" [onSelf = {onSelf}]", LogLevel.Verbose);
             WowUnit player = ((WowUnit)WowDataAdapter.ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid));
-            WowActionExecutor.CastSpell(spell.name, onSelf);
+            WowActionExecutor?.CastSpell(spell.name, onSelf);
 
             int casttime = 0;
             while (IsMeCasting())
@@ -112,6 +123,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine
                 || player.IsSilenced
                 || (casttime < spell.castTime - 100))
             {
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCast interrupted [casttime = {casttime}, spell.castTime = {spell.castTime}, IsConfused = {player.IsConfused}, IsDazed = {player.IsDazed}, IsDisarmed = {player.IsDisarmed}, IsFleeing = {player.IsFleeing}, IsSilenced = {player.IsSilenced}]", LogLevel.Verbose);
                 //we got interrupted, TODO: need to handle casttime buffs
                 return false;
             }

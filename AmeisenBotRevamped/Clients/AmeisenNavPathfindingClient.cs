@@ -1,4 +1,6 @@
 ﻿using AmeisenBotRevamped.Clients.Structs;
+using AmeisenBotRevamped.Logging;
+using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -18,11 +20,13 @@ namespace AmeisenBotRevamped.Clients
         public bool IsConnected { get; private set; }
 
         private Timer ConnectionWatchdog { get; set; }
+        private int ProcessId { get; set; }
 
-        public AmeisenNavPathfindingClient(string ip, int port)
+        public AmeisenNavPathfindingClient(string ip, int port, int processId)
         {
             Ip = IPAddress.Parse(ip);
             Port = port;
+            ProcessId = processId;
             TcpClient = new TcpClient();
 
             ConnectionWatchdog = new Timer(1000);
@@ -36,6 +40,7 @@ namespace AmeisenBotRevamped.Clients
             {
                 try
                 {
+                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tConnecting to NavmeshServer {Ip}:{Port}", LogLevel.Verbose);
                     TcpClient.Connect(Ip, Port);
                 }
                 catch { }
@@ -51,10 +56,15 @@ namespace AmeisenBotRevamped.Clients
             StreamReader sReader = new StreamReader(TcpClient.GetStream(), Encoding.ASCII);
             StreamWriter sWriter = new StreamWriter(TcpClient.GetStream(), Encoding.ASCII);
 
-            sWriter.WriteLine(JsonConvert.SerializeObject(new PathRequest(start, end, mapId)) + " &gt;");
+            string pathRequest = JsonConvert.SerializeObject(new PathRequest(start, end, mapId));
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tSending PathRequest to server: {pathRequest}", LogLevel.Verbose);
+
+            sWriter.WriteLine(pathRequest + " &gt;");
             sWriter.Flush();
 
             string pathJson = sReader.ReadLine().Replace("&gt;", "");
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tServer returned: {pathJson}", LogLevel.Verbose);
+
             return JsonConvert.DeserializeObject<List<Vector3>>(pathJson);
         }
 

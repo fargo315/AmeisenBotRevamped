@@ -461,5 +461,10 @@ namespace AmeisenBotRevamped.DataAdapters
             }
             catch { CheckForGameCrashed(); return null; }
         }
+
+        public WowPosition GetPosition(uint baseAddress)
+        {
+            return (WowPosition)ReadObject(baseAddress + OffsetList.OffsetWowUnitPosition, typeof(WowPosition));
+        }
     }
 }

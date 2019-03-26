@@ -1,9 +1,12 @@
 ﻿using AmeisenBotRevamped.ActionExecutors.Enums;
+using AmeisenBotRevamped.Logging;
+using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.OffsetLists;
 using AmeisenBotRevamped.Utils;
 using Magic;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +20,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         public bool IsWoWHooked => BlackMagic.ReadByte(EndsceneAddress) == 0xE9;
 
         public bool IsWorldLoaded { get; set; }
+        public int ProcessId => BlackMagic.ProcessId;
         #endregion
 
         #region Internal Properties
@@ -148,6 +152,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public void LuaDoString(string command)
         {
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tExecuting Lua \"{command}\"", LogLevel.Verbose);
             if (command.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(command);
@@ -172,6 +177,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public string GetLocalizedText(string variable)
         {
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tReading Lua variable \"{variable}\"", LogLevel.Verbose);
             if (variable.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(variable);
@@ -207,6 +213,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // we are going to replace this 5 bytes with
                 // our JMP instruction (JMP (1 byte) + Address (4 byte))
                 EndsceneAddress += ENDSCENE_HOOK_OFFSET;
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tHooking EndScene at \"{EndsceneAddress.ToString("X")}\"", LogLevel.Verbose);
 
                 // the address that we will return to after 
                 // the jump wer'e going to inject
@@ -225,8 +232,10 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // codecave to check if we need to execute something
                 CodecaveForCheck = BlackMagic.AllocateMemory(64);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at \"{CodecaveForCheck.ToString("X")}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
                 CodecaveForExecution = BlackMagic.AllocateMemory(256);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at \"{CodecaveForExecution.ToString("X")}\"", LogLevel.Verbose);
 
                 BlackMagic.Asm.Clear();
                 // save registers
@@ -282,6 +291,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // modify original EndScene instructions to start the hook
                 BlackMagic.Asm.AddLine($"JMP {CodecaveForCheck}");
                 BlackMagic.Asm.Inject(EndsceneAddress);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
                 // we should've hooked WoW now
             }
         }
@@ -292,6 +302,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 if (IsWoWHooked)
                 {
+                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDisposing Hook", LogLevel.Verbose);
                     BlackMagic.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
 
                     BlackMagic.FreeMemory(CodecaveForCheck);
@@ -313,6 +324,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public byte[] InjectAndExecute(string[] asm, bool readReturnBytes)
         {
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjecting ASM into Hook [asm = {JsonConvert.SerializeObject(asm)}, readReturnBytes = {readReturnBytes}]", LogLevel.Verbose);
             List<byte> returnBytes = new List<byte>();
 
             if (!IsWorldLoaded)
@@ -359,14 +371,15 @@ namespace AmeisenBotRevamped.ActionExecutors
                             buffer = BlackMagic.ReadByte(dwAddress);
                         }
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        // argument reading failed
+                        AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at reading the return bytes: \n{e.ToString()}", LogLevel.Error);
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e.ToString()}", LogLevel.Error);
                 // now there is no more code to be executed
                 BlackMagic.WriteInt(CodeToExecuteAddress, 0);
             }
