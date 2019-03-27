@@ -39,10 +39,13 @@ namespace AmeisenBotRevamped.ActionExecutors
         public uint CodecaveForCheck { get; private set; }
         public uint CodecaveForExecution { get; private set; }
         public bool IsInjectionUsed { get; private set; }
+
+        public Dictionary<(int, int), UnitReaction> ReactionCache { get; private set; }
         #endregion
 
         public MemoryWowActionExecutor(BlackMagic blackMagic, IOffsetList offsetList)
         {
+            ReactionCache = new Dictionary<(int, int), UnitReaction>();
             OriginalEndsceneBytes = offsetList.EndSceneBytes;
             BlackMagic = blackMagic;
             OffsetList = offsetList;
@@ -76,7 +79,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 return value;
             }
-            return 0;
+            return -1;
         }
 
         public void CastSpell(string spellName, bool castOnSelf = false)
@@ -205,6 +208,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         {
             // if WoW is already hooked, unhook it
             if (IsWoWHooked) { DisposeHook(); }
+            else { OriginalEndsceneBytes = BlackMagic.ReadBytes(EndsceneAddress, 5); }
 
             // if WoW is now/was unhooked, hook it
             if (!IsWoWHooked)
@@ -231,10 +235,10 @@ namespace AmeisenBotRevamped.ActionExecutors
                 BlackMagic.WriteInt(ReturnValueAddress, 0);
 
                 // codecave to check if we need to execute something
-                CodecaveForCheck = BlackMagic.AllocateMemory(64);
+                CodecaveForCheck = BlackMagic.AllocateMemory(256);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at \"{CodecaveForCheck.ToString("X")}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
-                CodecaveForExecution = BlackMagic.AllocateMemory(256);
+                CodecaveForExecution = BlackMagic.AllocateMemory(2048);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at \"{CodecaveForExecution.ToString("X")}\"", LogLevel.Verbose);
 
                 BlackMagic.Asm.Clear();
@@ -402,5 +406,104 @@ namespace AmeisenBotRevamped.ActionExecutors
         public void AcceptResurrect() => LuaDoString("AcceptResurrect();");
 
         public void AcceptSummon() => LuaDoString("ConfirmSummon();");
+
+        public void SendChatMessage(string command)
+            => LuaDoString($"DEFAULT_CHAT_FRAME.editBox:SetText(\"{command}\") ChatEdit_SendText(DEFAULT_CHAT_FRAME.editBox, 0)");
+
+        public UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB)
+        {
+            if (ReactionCache.ContainsKey((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)))
+            {
+                return ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)];
+            }
+
+            string[] asm = new string[]
+            {
+                "PUSH " + wowUnitA.BaseAddress,
+                "MOV ECX, " + wowUnitB.BaseAddress,
+                "CALL " + OffsetList.FunctionGetUnitReaction,
+                "RETN",
+            };
+
+            UnitReaction reaction = (UnitReaction)Convert.ToInt32(InjectAndExecute(asm, true));
+            ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
+            return reaction;
+        }
+
+        public void RightClickUnit(WowUnit wowUnit)
+        {
+            string[] asm = new string[]
+            {
+                $"MOV ECX, {wowUnit.BaseAddress}",
+                "MOV EAX, DWORD[ECX]",
+                "MOV EAX, DWORD[EAX + 88H]",
+                "call EAX",
+                "RETN",
+            };
+            InjectAndExecute(asm, false);
+        }
+
+        public List<string> GetAuras(string luaUnitName)
+        {
+            List<string> result = new List<string>(GetBuffs(luaUnitName));
+            result.AddRange(GetDebuffs(luaUnitName));
+            return result;
+        }
+
+        public List<string> GetBuffs(string luaUnitName)
+        {
+            List<string> resultLowered = new List<string>();
+            StringBuilder cmdBuffs = new StringBuilder();
+            cmdBuffs.Append("local buffs, i = { }, 1;");
+            cmdBuffs.Append($"local buff = UnitBuff(\"{luaUnitName}\", i);");
+            cmdBuffs.Append("while buff do\n");
+            cmdBuffs.Append("buffs[#buffs + 1] = buff;");
+            cmdBuffs.Append("i = i + 1;");
+            cmdBuffs.Append($"buff = UnitBuff(\"{luaUnitName}\", i);");
+            cmdBuffs.Append("end;");
+            cmdBuffs.Append("if #buffs < 1 then\n");
+            cmdBuffs.Append("buffs = \"\";");
+            cmdBuffs.Append("else\n");
+            cmdBuffs.Append("activeUnitBuffs = table.concat(buffs, \", \");");
+            cmdBuffs.Append("end;");
+
+            LuaDoString(cmdBuffs.ToString());
+            string[] buffs = GetLocalizedText("activeUnitBuffs").Split(',');
+
+            foreach (string s in buffs)
+            {
+                resultLowered.Add(s.Trim().ToLower());
+            }
+
+            return resultLowered;
+        }
+
+        public List<string> GetDebuffs(string luaUnitName)
+        {
+            List<string> resultLowered = new List<string>();
+            StringBuilder cmdDebuffs = new StringBuilder();
+            cmdDebuffs.Append("local buffs, i = { }, 1;");
+            cmdDebuffs.Append($"local buff = UnitDebuff(\"{luaUnitName}\", i);");
+            cmdDebuffs.Append("while buff do\n");
+            cmdDebuffs.Append("buffs[#buffs + 1] = buff;");
+            cmdDebuffs.Append("i = i + 1;");
+            cmdDebuffs.Append($"buff = UnitDebuff(\"{luaUnitName}\", i);");
+            cmdDebuffs.Append("end;");
+            cmdDebuffs.Append("if #buffs < 1 then\n");
+            cmdDebuffs.Append("buffs = \"\";");
+            cmdDebuffs.Append("else\n");
+            cmdDebuffs.Append("activeUnitDebuffs = table.concat(buffs, \", \");");
+            cmdDebuffs.Append("end;");
+
+            LuaDoString(cmdDebuffs.ToString());
+            string[] debuffs = GetLocalizedText("activeUnitDebuffs").Split(',');
+
+            foreach (string s in debuffs)
+            {
+                resultLowered.Add(s.Trim().ToLower());
+            }
+
+            return resultLowered;
+        }
     }
 }

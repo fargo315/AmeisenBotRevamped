@@ -32,6 +32,7 @@
         uint OffsetWowObjectGuid { get; }
         uint OffsetWowObjectDescriptor { get; }
         uint OffsetWowUnitPosition { get; }
+        uint DescriptorOffsetFactionTemplate { get; }
         uint OffsetGameObjectPosition { get; }
 
         uint DescriptorOffsetTargetGuid { get; }
@@ -54,7 +55,7 @@
         uint DescriptorOffsetRuneenergyGuid { get; }
         uint DescriptorOffsetMaxRuneenergyGuid { get; }
 
-        uint DescriptorOffsetExp{ get; }
+        uint DescriptorOffsetExp { get; }
         uint DescriptorOffsetMaxExp { get; }
 
         uint DescriptorOffsetUnitFlags { get; }
@@ -88,6 +89,8 @@
         uint FunctionLuaDoString { get; }
         uint FunctionGetLocalizedText { get; }
         uint FunctionGetActivePlayerObject { get; }
+        uint FunctionSendMovementPacket { get; }
+        uint FunctionGetUnitReaction { get; }
 
         uint StaticRaidLeader { get; }
         uint StaticPartyLeader { get; }

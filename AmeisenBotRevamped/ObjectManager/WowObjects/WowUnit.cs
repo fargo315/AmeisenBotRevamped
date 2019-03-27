@@ -19,6 +19,8 @@ namespace AmeisenBotRevamped.ObjectManager.WowObjects
 
         public WowPosition Position { get; set; }
 
+        public int FactionTemplate { get; set; }
+
         public BitVector32 UnitFlags { get; set; }
         public BitVector32 UnitFlagsDynamic { get; set; }
 

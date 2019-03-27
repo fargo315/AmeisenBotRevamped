@@ -3,10 +3,6 @@ using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
@@ -31,6 +27,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         void LuaDoString(string command);
         string GetLocalizedText(string variable);
+        void SendChatMessage(string message);
 
         void Stop();
 
@@ -40,5 +37,15 @@ namespace AmeisenBotRevamped.ActionExecutors
         void AcceptPartyInvite();
         void AcceptResurrect();
         void AcceptSummon();
+
+        UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB);
+
+        void RightClickUnit(WowUnit wowUnit);
+
+        List<string> GetAuras(string luaunitName);
+        List<string> GetBuffs(string luaunitName);
+        List<string> GetDebuffs(string luaunitName);
+
+        double GetSpellCooldown(string spellName);
     }
 }

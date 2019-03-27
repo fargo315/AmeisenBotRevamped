@@ -1,4 +1,6 @@
 ﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
+using AmeisenBotRevamped.AI.CombatEngine.SpellStrategies;
 using AmeisenBotRevamped.AI.StateMachine;
 using AmeisenBotRevamped.Autologin;
 using AmeisenBotRevamped.Clients;
@@ -8,6 +10,7 @@ using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -45,28 +48,28 @@ namespace AmeisenBotRevamped
             AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }
 
-        public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter)
+        public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter, IMovementProvider movementProvider, ISpellStrategy spellStrategy)
         {
             Attached = true;
             WowPathfindingClient = wowPathfindingClient;
             WowDataAdapter?.StartObjectUpdates();
-            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted ObjectUpdates...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted ObjectUpdates...");
 
             WowActionExecutor = wowActionExecutor;
             WowActionExecutor.IsWorldLoaded = true;
-            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted ActionExecutor...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted ActionExecutor...");
 
             WowEventAdapter = wowEventAdapter;
             WowEventAdapter?.Start();
-            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted EventAdapter...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted EventAdapter...");
 
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
 
-            StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient);
+            StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient, movementProvider, spellStrategy);
             StateMachine?.Start();
-            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tStarted StateMachine...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted StateMachine...");
 
-            AmeisenBotLogger.Instance.Log($"[{Process.Id.ToString("X")}]\tAmeisenBot attached...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tAmeisenBot attached...");
         }
 
         private void OnPartyInvitation(long timestamp, List<string> args)

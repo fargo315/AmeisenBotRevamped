@@ -23,6 +23,14 @@
         public uint StaticPlayerGuid => 0xCA1238;
         public uint StaticTargetGuid => 0xBD07B0;
         public uint StaticPetGuid => 0xC234D0;
+        public uint StaticLastTargetGuid => 0xBD07B8;
+
+        public uint StaticBattlegroundStatus => 0xBEA4D0;
+        public uint StaticIsIndoors => 0xB4AA94;
+
+        public uint StaticChatBufferStart => 0xB75A60;
+        public uint StaticChatBufferCount => 0xBCEFF4;
+        public uint OffsetChatBufferNext => 0x17C0;
 
         public uint OffsetCurrentObjectManager => 0x2ED0;
         public uint OffsetFirstObject => 0xAC;
@@ -32,6 +40,7 @@
         public uint OffsetWowObjectGuid => 0x30;
         public uint OffsetWowObjectDescriptor => 0x8;
         public uint OffsetWowUnitPosition => 0x798;
+        public uint DescriptorOffsetFactionTemplate => 0xDC;
         public uint OffsetGameObjectPosition => 0xE8;
 
         public uint DescriptorOffsetTargetGuid => 0x48;
@@ -88,6 +97,8 @@
         public uint FunctionLuaDoString => 0x819210;
         public uint FunctionGetLocalizedText => 0x7225E0;
         public uint FunctionGetActivePlayerObject => 0x4038F0;
+        public uint FunctionSendMovementPacket => 0x7413F0;
+        public uint FunctionGetUnitReaction => 0x7251C0;
 
         public uint StaticRaidLeader => 0xBD1990;
         public uint StaticPartyLeader => 0xBD1968;

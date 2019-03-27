@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AmeisenBotRevamped.AI.CombatEngine.Structs
+namespace AmeisenBotRevamped.AI.CombatEngine.Objects
 {
-    public struct Spell
+    public class Spell
     {
         public int castTime;
         public int costs;

@@ -1,4 +1,5 @@
 ﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
 using AmeisenBotRevamped.Autologin;
 using AmeisenBotRevamped.Autologin.Structs;
 using AmeisenBotRevamped.Clients;
@@ -230,7 +231,7 @@ namespace AmeisenBotRevamped.Gui
                 IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.BlackMagic, OffsetList);
                 IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient(Settings.AmeisenNavmeshServerIp, Settings.AmeisenNavmeshServerPort, ameisenBot.Process.Id);
                 IWowEventAdapter wowEventAdapter = new LuaHookWowEventAdapter(wowActionExecutor);
-                ameisenBot.Attach(wowActionExecutor, pathfindingClient, wowEventAdapter);
+                ameisenBot.Attach(wowActionExecutor, pathfindingClient, wowEventAdapter, new BasicMeleeMovementProvider(), null);
             }
         }
 

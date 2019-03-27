@@ -32,15 +32,15 @@ namespace AmeisenBotRevamped.DataAdapters
 
         public bool ObjectUpdatesEnabled => false;
 
-        public int ZoneId => 0;
+        public int ZoneId => 1000;
 
-        public int ComboPoints => 0;
+        public int ComboPoints => 4;
 
         public int WowBuild => 12340;
 
         public string ContinentName => "Trash";
 
-        public string LastErrorMessage => "You suck ";
+        public string LastErrorMessage => "You suck";
 
         public WowPosition ActivePlayerPosition => new WowPosition();
 
@@ -52,16 +52,16 @@ namespace AmeisenBotRevamped.DataAdapters
 
             ObjectManager = new WowObjectManager(this)
             {
-                WowObjects = GetFakeObjects(false)
+                WowObjects = GetFakeObjects(false, false)
         };
         }
 
         public void SetMeInCombat(bool v)
         {
-            ObjectManager.WowObjects = GetFakeObjects(v);
+            ObjectManager.WowObjects = GetFakeObjects(v, false);
         }
 
-        private List<WowObject> GetFakeObjects(bool isMeInCombat)
+        private List<WowObject> GetFakeObjects(bool isMeInCombat, bool isPartyInCombat)
         {
             return new List<WowObject>
                 {
@@ -108,7 +108,7 @@ namespace AmeisenBotRevamped.DataAdapters
                             z = 0,
                             r = 0,
                         },
-                        UnitFlags = new BitVector32(),
+                        UnitFlags = isPartyInCombat ? new BitVector32((int)UnitFlags.Combat) : new BitVector32(),
                         UnitFlagsDynamic = new BitVector32()
                     },
                     new WowUnit(){
@@ -139,6 +139,11 @@ namespace AmeisenBotRevamped.DataAdapters
                         Type = WowObjectType.Gameobject
                     },
                 };
+        }
+
+        public void SetPartyInCombat(bool v)
+        {
+            ObjectManager.WowObjects = GetFakeObjects(false, v);
         }
 
         public void SetIsWorldLoaded(bool v)

@@ -1,4 +1,6 @@
 ﻿using AmeisenBotRevamped.AI.CombatEngine;
+using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
+using AmeisenBotRevamped.AI.CombatEngine.SpellStrategies;
 
 namespace AmeisenBotRevamped.AI.StateMachine.States
 {
@@ -7,9 +9,14 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
         private AmeisenBotStateMachine StateMachine { get; set; }
         private ICombatEngine CombatEngine { get; set; }
 
+        private IMovementProvider MovementProvider { get; set; }
+        private ISpellStrategy SpellStrategy { get; set; }
+
         public BotStateCombat(AmeisenBotStateMachine stateMachine)
         {
             StateMachine = stateMachine;
+            MovementProvider = StateMachine.MovementProvider;
+            SpellStrategy = StateMachine.SpellStrategy;
         }
 
         public override void Execute()
@@ -30,7 +37,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Start()
         {
-            CombatEngine = new BasicCombatEngine(StateMachine.WowDataAdapter, StateMachine.WowActionExecutor);
+            CombatEngine = new BasicCombatEngine(StateMachine.WowDataAdapter, StateMachine.WowActionExecutor, MovementProvider, SpellStrategy);
             CombatEngine?.Start();
         }
 

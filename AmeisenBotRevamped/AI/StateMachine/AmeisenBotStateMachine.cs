@@ -1,4 +1,6 @@
 ﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
+using AmeisenBotRevamped.AI.CombatEngine.SpellStrategies;
 using AmeisenBotRevamped.AI.StateMachine.States;
 using AmeisenBotRevamped.Clients;
 using AmeisenBotRevamped.DataAdapters;
@@ -27,13 +29,19 @@ namespace AmeisenBotRevamped.AI.StateMachine
         internal WowObjectManager ObjectManager => WowDataAdapter.ObjectManager;
         internal IPathfindingClient PathfindingClient { get; set; }
 
+        public IMovementProvider MovementProvider { get; set; }
+        public ISpellStrategy SpellStrategy { get; set; }
+
         private Timer StateMachineTimer { get; set; }
         public void Start() => StateMachineTimer.Start();
         public void Stop() => StateMachineTimer.Stop();
         public bool Enabled => StateMachineTimer.Enabled;
 
-        public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, int stateUpdateInterval = 100)
+        public AmeisenBotStateMachine(IWowDataAdapter dataAdapter, IWowActionExecutor wowActionExecutor, IPathfindingClient pathfindingClient, IMovementProvider movementProvider, ISpellStrategy spellStrategy, int stateUpdateInterval = 100)
         {
+            MovementProvider = movementProvider;
+            SpellStrategy = spellStrategy;
+
             BotStates = new Dictionary<Type, BotState> {
                 {typeof(BotStateIdle), new BotStateIdle(this) },
                 {typeof(BotStateFollow), new BotStateFollow(this) },
