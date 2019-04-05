@@ -24,5 +24,7 @@ namespace AmeisenBotRevamped.CharacterManager.Objects
         public string sellprice;
         public string subtype;
         public string type;
+        public string lootable;
+        public string readable;
     }
 }
