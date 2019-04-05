@@ -19,7 +19,7 @@ namespace AmeisenBotRevamped.CharacterManager.ItemComparator.Tests
         public void CompareItemsTest()
         {
             TestWowDataAdapter dataAdapter = new TestWowDataAdapter();
-            BasicItemLevelComparator basicItemLevelComparator = new BasicItemLevelComparator(dataAdapter, dataAdapter.ObjectManager);
+            BasicItemLevelComparator basicItemLevelComparator = new BasicItemLevelComparator(dataAdapter);
 
             RawItem rawItem1 = new RawItem
             {

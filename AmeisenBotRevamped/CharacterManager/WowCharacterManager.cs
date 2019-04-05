@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace AmeisenBotRevamped.CharacterManager
 {
-    public class CharacterManager
+    public class WowCharacterManager
     {
         public IWowDataAdapter WowDataAdapter { get; private set; }
         public IWowActionExecutor WowActionExecutor { get; private set; }
@@ -20,7 +20,7 @@ namespace AmeisenBotRevamped.CharacterManager
         public Dictionary<EquipmentSlot, IItem> CurrentEquipment { get; private set; }
         public List<IItem> InventoryItems { get; private set; }
 
-        public CharacterManager(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor, IItemComparator itemComparator)
+        public WowCharacterManager(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor, IItemComparator itemComparator)
         {
             CurrentEquipment = new Dictionary<EquipmentSlot, IItem>();
 

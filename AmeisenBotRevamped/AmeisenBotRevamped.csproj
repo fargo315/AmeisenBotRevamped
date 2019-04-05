@@ -79,7 +79,7 @@
     <Compile Include="Autologin\IAutologinProvider.cs" />
     <Compile Include="Autologin\SimpleAutologinProvider.cs" />
     <Compile Include="Autologin\Structs\WowAccount.cs" />
-    <Compile Include="CharacterManager\CharacterManager.cs" />
+    <Compile Include="CharacterManager\WowCharacterManager.cs" />
     <Compile Include="CharacterManager\Enums\ArmorType.cs" />
     <Compile Include="CharacterManager\Enums\EquipmentSlot.cs" />
     <Compile Include="CharacterManager\Enums\ItemQuality.cs" />

@@ -3,6 +3,8 @@ using AmeisenBotRevamped.AI.CombatEngine.MovementProvider;
 using AmeisenBotRevamped.AI.CombatEngine.SpellStrategies;
 using AmeisenBotRevamped.AI.StateMachine;
 using AmeisenBotRevamped.Autologin;
+using AmeisenBotRevamped.CharacterManager;
+using AmeisenBotRevamped.CharacterManager.ItemComparator;
 using AmeisenBotRevamped.Clients;
 using AmeisenBotRevamped.DataAdapters;
 using AmeisenBotRevamped.EventAdapters;
@@ -10,7 +12,6 @@ using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -28,6 +29,7 @@ namespace AmeisenBotRevamped
         public IAutologinProvider AutologinProvider { get; private set; }
 
         public WowObjectManager ObjectManager => WowDataAdapter.ObjectManager;
+        public WowCharacterManager CharacterManager { get; private set; }
 
         public AmeisenBotStateMachine StateMachine { get; private set; }
 
@@ -35,7 +37,7 @@ namespace AmeisenBotRevamped
         public Process Process { get; private set; }
         public bool Attached { get; private set; }
 
-        public AmeisenBot(BlackMagic blackMagic, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process)
+        public AmeisenBot(BlackMagic blackMagic, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process, IItemComparator itemComparator = null)
         {
             Attached = false;
             AutologinProvider = autologinProvider;
@@ -44,6 +46,11 @@ namespace AmeisenBotRevamped
             WowDataAdapter = wowDataAdapter;
             WowDataAdapter.OnGamestateChanged = COnGamestateChanged;
             BlackMagic = blackMagic;
+
+            if (itemComparator == null)
+                itemComparator = new BasicItemLevelComparator(wowDataAdapter);
+
+            CharacterManager = new WowCharacterManager(WowDataAdapter, WowActionExecutor, itemComparator);
 
             AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }

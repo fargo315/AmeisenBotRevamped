@@ -5,7 +5,7 @@ namespace AmeisenBotRevamped.CharacterManager.Objects
 {
     public class WeaponItem : BasicItem
     {
-        public WeaponType ArmorType => Enum.TryParse(Subtype.ToUpper().Replace("-", "").Replace(" ", "_"), out WeaponType armorType) ? armorType : ArmorType.MISCELLANEOUS;
+        public WeaponType ArmorType => Enum.TryParse(Subtype.ToUpper().Replace("-", "").Replace(" ", "_"), out WeaponType armorType) ? armorType : WeaponType.MISCELLANEOUS;
 
         public WeaponItem(RawItem rawItem) : base(rawItem)
         {

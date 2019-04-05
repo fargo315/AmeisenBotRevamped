@@ -9,12 +9,11 @@ namespace AmeisenBotRevamped.CharacterManager.ItemComparator
     public class BasicItemLevelComparator : IItemComparator
     {
         public IWowDataAdapter WowDataAdapter { get; private set; }
-        public WowObjectManager ObjectManager { get; private set; }
+        public WowObjectManager ObjectManager => WowDataAdapter.ObjectManager;
 
-        public BasicItemLevelComparator(IWowDataAdapter wowDataAdapter, WowObjectManager objectManager)
+        public BasicItemLevelComparator(IWowDataAdapter wowDataAdapter)
         {
             WowDataAdapter = wowDataAdapter;
-            ObjectManager = objectManager;
         }
 
         public bool CompareItems(IItem newItem, IItem currentItem)
