@@ -8,6 +8,7 @@ using AmeisenBotRevamped.Logging.Enums;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AmeisenBotRevamped.CharacterManager
 {
@@ -19,6 +20,21 @@ namespace AmeisenBotRevamped.CharacterManager
 
         public Dictionary<EquipmentSlot, IItem> CurrentEquipment { get; private set; }
         public List<IItem> InventoryItems { get; private set; }
+
+        public List<ArmorItem> Armor => InventoryItems.OfType<ArmorItem>().ToList();
+        public List<ConsumableItem> Consumables => InventoryItems.OfType<ConsumableItem>().ToList();
+        public List<ContainerItem> Containers => InventoryItems.OfType<ContainerItem>().ToList();
+        public List<GemItem> Gems => InventoryItems.OfType<GemItem>().ToList();
+        public List<KeyItem> Keys => InventoryItems.OfType<KeyItem>().ToList();
+        public List<MiscellaneousItem> MiscellaneousItems => InventoryItems.OfType<MiscellaneousItem>().ToList();
+        public List<MoneyItem> MoneyItems => InventoryItems.OfType<MoneyItem>().ToList();
+        public List<ProjectileItem> Projectiles => InventoryItems.OfType<ProjectileItem>().ToList();
+        public List<QuestItem> QuestItems => InventoryItems.OfType<QuestItem>().ToList();
+        public List<QuiverItem> Quivers => InventoryItems.OfType<QuiverItem>().ToList();
+        public List<ReagentItem> Reagents => InventoryItems.OfType<ReagentItem>().ToList();
+        public List<RecipeItem> Recipes => InventoryItems.OfType<RecipeItem>().ToList();
+        public List<TradeGoodItem> TradeGoods => InventoryItems.OfType<TradeGoodItem>().ToList();
+        public List<WeaponItem> Weapons => InventoryItems.OfType<WeaponItem>().ToList();
 
         public WowCharacterManager(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor, IItemComparator itemComparator)
         {

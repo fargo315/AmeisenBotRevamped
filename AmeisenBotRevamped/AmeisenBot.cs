@@ -81,7 +81,9 @@ namespace AmeisenBotRevamped
             WowEventAdapter?.Subscribe(WowEvents.READY_CHECK, OnReadyCheck);
             WowEventAdapter?.Subscribe(WowEvents.DELETE_ITEM_CONFIRM, OnConfirmDeleteItem);
             WowEventAdapter?.Subscribe(WowEvents.ITEM_PUSH, OnNewItemReceived);
-            
+
+            //WowEventAdapter?.Subscribe(WowEvents.COMBAT_LOG_EVENT_UNFILTERED, OnCombatLogEvent);
+
             StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient, movementProvider, spellStrategy);
             StateMachine?.Start();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted StateMachine...");
@@ -90,6 +92,11 @@ namespace AmeisenBotRevamped
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tUpdated Character...");
 
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tAmeisenBot attached...");
+        }
+
+        private void OnCombatLogEvent(long timestamp, List<string> args)
+        {
+            // TODO: parse the log or whatever...
         }
 
         private void OnConfirmDeleteItem(long timestamp, List<string> args)
