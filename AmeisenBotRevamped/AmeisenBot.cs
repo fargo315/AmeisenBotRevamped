@@ -12,6 +12,8 @@ using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Magic;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -71,12 +73,58 @@ namespace AmeisenBotRevamped
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted EventAdapter...");
 
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
-
+            WowEventAdapter?.Subscribe(WowEvents.LOOT_OPENED, OnLootWindowOpened);
+            WowEventAdapter?.Subscribe(WowEvents.RESURRECT_REQUEST, OnResurrectRequest);
+            WowEventAdapter?.Subscribe(WowEvents.CONFIRM_SUMMON, OnSummonRequest);
+            WowEventAdapter?.Subscribe(WowEvents.LOOT_BIND_CONFIRM, OnConfirmBindOnPickup);
+            WowEventAdapter?.Subscribe(WowEvents.CONFIRM_LOOT_ROLL, OnConfirmBindOnPickup);
+            WowEventAdapter?.Subscribe(WowEvents.READY_CHECK, OnReadyCheck);
+            WowEventAdapter?.Subscribe(WowEvents.DELETE_ITEM_CONFIRM, OnConfirmDeleteItem);
+            WowEventAdapter?.Subscribe(WowEvents.ITEM_PUSH, OnNewItemReceived);
+            
             StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient, movementProvider, spellStrategy);
             StateMachine?.Start();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted StateMachine...");
 
+            CharacterManager?.UpdateFullCharacter();
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tUpdated Character...");
+
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tAmeisenBot attached...");
+        }
+
+        private void OnConfirmDeleteItem(long timestamp, List<string> args)
+        {
+            // type delete and confirm this shit
+        }
+
+        private void OnNewItemReceived(long timestamp, List<string> args)
+        {
+            AmeisenBotLogger.Instance.Log($"Received new Item {JsonConvert.SerializeObject(args)}");
+        }
+
+        private void OnReadyCheck(long timestamp, List<string> args)
+        {
+            WowActionExecutor.CofirmReadyCheck(true);
+        }
+
+        private void OnConfirmBindOnPickup(long timestamp, List<string> args)
+        {
+            WowActionExecutor.CofirmBop();
+        }
+
+        private void OnSummonRequest(long timestamp, List<string> args)
+        {
+            WowActionExecutor.AcceptSummon();
+        }
+
+        private void OnResurrectRequest(long timestamp, List<string> args)
+        {
+            WowActionExecutor.AcceptResurrect();
+        }
+
+        private void OnLootWindowOpened(long timestamp, List<string> args)
+        {
+            WowActionExecutor.LootEveryThing();
         }
 
         private void OnPartyInvitation(long timestamp, List<string> args)

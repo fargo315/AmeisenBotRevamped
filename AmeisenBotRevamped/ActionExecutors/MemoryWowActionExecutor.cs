@@ -401,11 +401,23 @@ namespace AmeisenBotRevamped.ActionExecutors
             DisposeHook();
         }
 
-        public void AcceptPartyInvite() => LuaDoString("AcceptGroup();");
+        public void AcceptPartyInvite()
+        {
+            LuaDoString("AcceptGroup();");
+            SendChatMessage("/click StaticPopup1Button1");
+        }
 
-        public void AcceptResurrect() => LuaDoString("AcceptResurrect();");
+        public void AcceptResurrect()
+        {
+            LuaDoString("AcceptResurrect();");
+            SendChatMessage("/click StaticPopup1Button1");
+        }
 
-        public void AcceptSummon() => LuaDoString("ConfirmSummon();");
+        public void AcceptSummon()
+        {
+            LuaDoString("ConfirmSummon();");
+            SendChatMessage("/click StaticPopup1Button1");
+        }
 
         public void SendChatMessage(string command)
             => LuaDoString($"DEFAULT_CHAT_FRAME.editBox:SetText(\"{command}\") ChatEdit_SendText(DEFAULT_CHAT_FRAME.editBox, 0)");
@@ -504,6 +516,17 @@ namespace AmeisenBotRevamped.ActionExecutors
             }
 
             return resultLowered;
+        }
+
+        public void CofirmBop()
+        {
+            LuaDoString("ConfirmBindOnUse();");
+            SendChatMessage("/click StaticPopup1Button1");
+        }
+
+        public void CofirmReadyCheck(bool isReady)
+        {
+            LuaDoString($"ConfirmReadyCheck({isReady});");
         }
     }
 }

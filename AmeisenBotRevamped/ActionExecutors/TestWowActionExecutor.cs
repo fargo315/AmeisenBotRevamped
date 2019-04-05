@@ -42,6 +42,16 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         }
 
+        public void CofirmBop()
+        {
+
+        }
+
+        public void CofirmReadyCheck(bool isReady)
+        {
+
+        }
+
         public void FaceUnit(WowPlayer player, WowPosition positionToFace)
         {
 
