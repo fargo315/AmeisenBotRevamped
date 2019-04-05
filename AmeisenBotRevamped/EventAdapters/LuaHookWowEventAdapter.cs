@@ -2,6 +2,7 @@
 using AmeisenBotRevamped.EventAdapters.Structs;
 using AmeisenBotRevamped.Logging;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Timers;
@@ -51,44 +52,52 @@ namespace AmeisenBotRevamped.EventAdapters
 
         private void CEventReaderTimer(object sender, ElapsedEventArgs e)
         {
-            if (!IsSetUp)
-            {
-                IsSetUp = true;
-                SetupEventHook();
-            }
-
-            // Unminified lua code can be found im my github repo "WowLuaStuff"
-            WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",'end end end end;abEventJson=abEventJson..']'abEventTable={}");
-            string eventJson = WowActionExecutor.GetLocalizedText("abEventJson");
-
-            List<RawEvent> rawEvents = new List<RawEvent>();
             try
             {
-                List<RawEvent> finalEvents = new List<RawEvent>();
-                rawEvents = JsonConvert.DeserializeObject<List<RawEvent>>(eventJson);
-
-                foreach (RawEvent rawEvent in rawEvents)
+                if (!IsSetUp)
                 {
-                    if (!finalEvents.Contains(rawEvent))
-                    {
-                        finalEvents.Add(rawEvent);
-                    }
+                    IsSetUp = true;
+                    SetupEventHook();
                 }
 
-                if (finalEvents.Count > 0)
+                // Unminified lua code can be found im my github repo "WowLuaStuff"
+                WowActionExecutor.LuaDoString("abEventJson='['for a,b in pairs(abEventTable)do abEventJson=abEventJson..'{'for c,d in pairs(b)do if type(d)==\"table\"then abEventJson=abEventJson..'\"args\": ['for e,f in pairs(d)do abEventJson=abEventJson..'\"'..f..'\"'if e<=table.getn(d)then abEventJson=abEventJson..','end end;abEventJson=abEventJson..']}'if a<table.getn(abEventTable)then abEventJson=abEventJson..','end else if type(d)==\"string\"then abEventJson=abEventJson..'\"event\": \"'..d..'\",'else abEventJson=abEventJson..'\"time\": \"'..d..'\",'end end end end;abEventJson=abEventJson..']'abEventTable={}");
+                string eventJson = WowActionExecutor.GetLocalizedText("abEventJson");
+
+                List<RawEvent> rawEvents = new List<RawEvent>();
+                try
                 {
-                    foreach (RawEvent rawEvent in finalEvents)
+                    List<RawEvent> finalEvents = new List<RawEvent>();
+                    rawEvents = JsonConvert.DeserializeObject<List<RawEvent>>(eventJson);
+
+                    foreach (RawEvent rawEvent in rawEvents)
                     {
-                        if (EventDictionary.ContainsKey(rawEvent.@event))
+                        if (!finalEvents.Contains(rawEvent))
                         {
-                            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\t{EventDictionary[rawEvent.@event].Method.Name}({rawEvent.time}, {JsonConvert.SerializeObject(rawEvent.args)})");
-                            EventDictionary[rawEvent.@event].Invoke(rawEvent.time, rawEvent.args);
+                            finalEvents.Add(rawEvent);
+                        }
+                    }
+
+                    if (finalEvents.Count > 0)
+                    {
+                        foreach (RawEvent rawEvent in finalEvents)
+                        {
+                            if (EventDictionary.ContainsKey(rawEvent.@event))
+                            {
+                                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\t{EventDictionary[rawEvent.@event].Method.Name}({rawEvent.time}, {JsonConvert.SerializeObject(rawEvent.args)})");
+                                EventDictionary[rawEvent.@event].Invoke(rawEvent.time, rawEvent.args);
+                            }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
             }
         }
 

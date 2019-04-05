@@ -4,12 +4,13 @@ using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.OffsetLists;
-using Magic;
+using TrashMemCore;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Timers;
+using System.Text;
 
 namespace AmeisenBotRevamped.DataAdapters
 {
@@ -51,14 +52,14 @@ namespace AmeisenBotRevamped.DataAdapters
         public string LastErrorMessage => ReadString(OffsetList.StaticErrorMessage, 64);
         public string AccountName => ReadString(OffsetList.StaticAccountName, 16);
 
-        public WowPosition ActivePlayerPosition => (WowPosition)ReadObject(ReadUInt(OffsetList.StaticPlayerBase) + OffsetList.OffsetWowUnitPosition, typeof(WowPosition));
+        public WowPosition ActivePlayerPosition => ReadObject<WowPosition>(ReadUInt(OffsetList.StaticPlayerBase) + OffsetList.OffsetWowUnitPosition);
         #endregion
 
         #region Internal Properties
         // You may not need them but who knows
 
         public IOffsetList OffsetList { get; private set; }
-        public BlackMagic BlackMagic { get; private set; }
+        public TrashMem TrashMem { get; private set; }
         #endregion
 
         #region External Properties
@@ -78,14 +79,14 @@ namespace AmeisenBotRevamped.DataAdapters
         private Dictionary<ulong, string> UnitNameCache { get; set; }
         #endregion
 
-        public MemoryWowDataAdapter(BlackMagic blackMagic, IOffsetList offsetList)
+        public MemoryWowDataAdapter(TrashMem trashMem, IOffsetList offsetList)
         {
             LastIsWorldLoaded = false;
             PlayerNameCache = new Dictionary<ulong, string>();
             UnitNameCache = new Dictionary<ulong, string>();
 
             WowObjectList = new List<WowObject>();
-            BlackMagic = blackMagic;
+            TrashMem = trashMem;
             OffsetList = offsetList;
 
             SetupAdapter();
@@ -193,10 +194,10 @@ namespace AmeisenBotRevamped.DataAdapters
                 Type = wowObjectType,
                 Name = ReadUnitName(activeObject, wowObject.Guid),
                 TargetGuid = ReadUInt64(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetTargetGuid),
-                Position = (WowPosition)ReadObject(activeObject + OffsetList.OffsetWowUnitPosition, typeof(WowPosition)),
-                FactionTemplate = ReadInt(activeObject + OffsetList.DescriptorOffsetFactionTemplate),
-                UnitFlags = (BitVector32)ReadObject(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags, typeof(BitVector32)),
-                UnitFlagsDynamic = (BitVector32)ReadObject(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlagsDynamic, typeof(BitVector32)),
+                Position = ReadObject<WowPosition>(activeObject + OffsetList.OffsetWowUnitPosition),
+                FactionTemplate = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetFactionTemplate),
+                UnitFlags = ReadObject<BitVector32>(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags),
+                UnitFlagsDynamic = ReadObject<BitVector32>(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlagsDynamic),
                 Health = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetHealth),
                 MaxHealth = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetMaxHealth),
                 Energy = ReadInt(wowObject.DescriptorAddress + OffsetList.DescriptorOffsetEnergy),
@@ -379,7 +380,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
             try
             {
-                Process.GetProcessById(BlackMagic.ProcessId);
+                Process.GetProcessById(TrashMem.Process.Id);
             }
             catch
             {
@@ -405,7 +406,7 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                return BlackMagic.ReadUInt64(offset);
+                return TrashMem.ReadUnmanaged<ulong>(offset);
             }
             catch { CheckForGameCrashed(); return 0; }
         }
@@ -414,7 +415,7 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                return BlackMagic.ReadInt(offset);
+                return TrashMem.ReadInt32(offset);
             }
             catch { CheckForGameCrashed(); return 0; }
         }
@@ -423,7 +424,7 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                BlackMagic.WriteInt(offset, value);
+                TrashMem.Write<int>(offset, value);
             }
             catch { CheckForGameCrashed(); }
         }
@@ -432,7 +433,7 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                return BlackMagic.ReadUInt(offset);
+                return TrashMem.ReadUnmanaged<uint>(offset);
             }
             catch { CheckForGameCrashed(); return 0; }
         }
@@ -441,7 +442,7 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                return BlackMagic.ReadByte(offset);
+                return TrashMem.ReadChar(offset);
             }
             catch { CheckForGameCrashed(); return 0; }
         }
@@ -450,23 +451,23 @@ namespace AmeisenBotRevamped.DataAdapters
         {
             try
             {
-                return BlackMagic.ReadASCIIString(offset, lenght);
+                return TrashMem.ReadString(offset, Encoding.ASCII, lenght);
             }
             catch { CheckForGameCrashed(); return ""; }
         }
 
-        private object ReadObject(uint offset, Type type)
+        private T ReadObject<T>(uint offset)
         {
             try
             {
-                return BlackMagic.ReadObject(offset, type);
+                return TrashMem.ReadStruct<T>(offset);
             }
-            catch { CheckForGameCrashed(); return null; }
+            catch { CheckForGameCrashed(); return default; }
         }
 
         public WowPosition GetPosition(uint baseAddress)
         {
-            return (WowPosition)ReadObject(baseAddress + OffsetList.OffsetWowUnitPosition, typeof(WowPosition));
+            return ReadObject<WowPosition>(baseAddress + OffsetList.OffsetWowUnitPosition);
         }
     }
 }

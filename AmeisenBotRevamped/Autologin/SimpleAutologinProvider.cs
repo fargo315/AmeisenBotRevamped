@@ -2,11 +2,12 @@
 using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.OffsetLists;
-using Magic;
+using TrashMemCore;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Text;
 
 namespace AmeisenBotRevamped.Autologin
 {
@@ -32,7 +33,7 @@ namespace AmeisenBotRevamped.Autologin
         {
             try
             {
-                BlackMagic blackMagic = new BlackMagic(process.Id);
+                TrashMem trashMem = new TrashMem(process);
                 int count = 0;
 
                 LoginInProgress = true;
@@ -40,16 +41,16 @@ namespace AmeisenBotRevamped.Autologin
 
                 OffsetList = offsetlist;
 
-                while (blackMagic.ReadInt(offsetlist.StaticIsWorldLoaded) != 1 && count < 8)
+                while (trashMem.ReadInt32(offsetlist.StaticIsWorldLoaded) != 1 && count < 8)
                 {
-                    switch (blackMagic.ReadASCIIString(offsetlist.StaticGameState, 10))
+                    switch (trashMem.ReadString(offsetlist.StaticGameState, Encoding.ASCII, 10))
                     {
                         case "login":
-                            HandleLogin(blackMagic, process, wowAccount);
+                            HandleLogin(trashMem, process, wowAccount);
                             break;
 
                         case "charselect":
-                            HandleCharSelect(blackMagic, process, wowAccount);
+                            HandleCharSelect(trashMem, process, wowAccount);
                             break;
 
                         default:
@@ -70,7 +71,7 @@ namespace AmeisenBotRevamped.Autologin
             LoginInProgressCharactername = "";
         }
 
-        private void HandleLogin(BlackMagic blackMagic, Process process, WowAccount wowAccount)
+        private void HandleLogin(TrashMem trashMem, Process process, WowAccount wowAccount)
         {
             AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Login into account: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
             foreach (char c in wowAccount.Username)
@@ -102,19 +103,19 @@ namespace AmeisenBotRevamped.Autologin
                 Thread.Sleep(3000);
 
                 firstTime = false;
-            } while (blackMagic.ReadASCIIString(OffsetList.StaticGameState, 10) == "login");
+            } while (trashMem.ReadString(OffsetList.StaticGameState, Encoding.ASCII,10) == "login");
         }
 
-        private void HandleCharSelect(BlackMagic blackMagic, Process process, WowAccount wowAccount)
+        private void HandleCharSelect(TrashMem trashMem, Process process, WowAccount wowAccount)
         {
             AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Characterselection: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
-            int currentSlot = blackMagic.ReadInt((uint)blackMagic.MainModule.BaseAddress + OffsetList.StaticCharacterSlotSelected);
+            int currentSlot = trashMem.ReadInt32(OffsetList.StaticCharacterSlotSelected);
 
             while (currentSlot != wowAccount.CharacterSlot)
             {
                 SendKeyToProcess(process, 0x28);
                 Thread.Sleep(200);
-                currentSlot = blackMagic.ReadInt((uint)blackMagic.MainModule.BaseAddress + OffsetList.StaticCharacterSlotSelected);
+                currentSlot = trashMem.ReadInt32(OffsetList.StaticCharacterSlotSelected);
             }
 
             SendKeyToProcess(process, 0x0D);

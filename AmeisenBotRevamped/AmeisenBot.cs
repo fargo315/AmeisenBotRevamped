@@ -9,10 +9,10 @@ using AmeisenBotRevamped.EventAdapters;
 using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.ObjectManager;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
-using Magic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using TrashMemCore;
 
 namespace AmeisenBotRevamped
 {
@@ -31,11 +31,11 @@ namespace AmeisenBotRevamped
 
         public AmeisenBotStateMachine StateMachine { get; private set; }
 
-        public BlackMagic BlackMagic { get; private set; }
+        public TrashMem TrashMem { get; private set; }
         public Process Process { get; private set; }
         public bool Attached { get; private set; }
 
-        public AmeisenBot(BlackMagic blackMagic, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process)
+        public AmeisenBot(TrashMem trashMem, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process)
         {
             Attached = false;
             AutologinProvider = autologinProvider;
@@ -43,7 +43,7 @@ namespace AmeisenBotRevamped
 
             WowDataAdapter = wowDataAdapter;
             WowDataAdapter.OnGamestateChanged = COnGamestateChanged;
-            BlackMagic = blackMagic;
+            TrashMem = trashMem;
 
             AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }

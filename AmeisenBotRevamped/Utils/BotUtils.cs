@@ -1,7 +1,8 @@
 ﻿using AmeisenBotRevamped.OffsetLists;
-using Magic;
+using TrashMemCore;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace AmeisenBotRevamped.Utils
 {
@@ -14,26 +15,26 @@ namespace AmeisenBotRevamped.Utils
 
             foreach (Process p in processList)
             {
-                BlackMagic blackmagic = new BlackMagic(p.Id);
-                uint pDevice = blackmagic.ReadUInt(offsetList.StaticEndSceneDevice);
-                uint pEnd = blackmagic.ReadUInt(pDevice + offsetList.EndSceneOffsetDevice);
-                uint pScene = blackmagic.ReadUInt(pEnd);
-                uint endscene = blackmagic.ReadUInt(pScene + offsetList.EndSceneOffset);
+                TrashMem trashMem = new TrashMem(p);
+                uint pDevice = trashMem.ReadUnmanaged<uint>(offsetList.StaticEndSceneDevice);
+                uint pEnd = trashMem.ReadUnmanaged<uint>(pDevice + offsetList.EndSceneOffsetDevice);
+                uint pScene = trashMem.ReadUnmanaged<uint>(pEnd);
+                uint endscene = trashMem.ReadUnmanaged<uint>(pScene + offsetList.EndSceneOffset);
 
                 bool isAlreadyHooked = false;
                 try
                 {
-                    isAlreadyHooked = blackmagic.ReadByte(endscene + 0x2) == 0xE9;
+                    isAlreadyHooked = trashMem.ReadChar(endscene + 0x2) == 0xE9;
                 }
                 catch { }
 
-                string name = blackmagic.ReadASCIIString(offsetList.StaticPlayerName, 12);
+                string name = trashMem.ReadString(offsetList.StaticPlayerName, Encoding.ASCII, 12);
                 if (name == "")
                 {
                     name = "not logged in";
                 }
 
-                string realm = blackmagic.ReadASCIIString(offsetList.StaticRealmName, 12);
+                string realm = trashMem.ReadString(offsetList.StaticRealmName, Encoding.ASCII, 12);
                 if (realm == "")
                 {
                     if (name == "not logged in")
@@ -47,7 +48,7 @@ namespace AmeisenBotRevamped.Utils
                 }
 
                 wows.Add(new WowProcess(p, name, realm, isAlreadyHooked));
-                blackmagic.Close();
+                trashMem.Detach();
             }
 
             return wows;

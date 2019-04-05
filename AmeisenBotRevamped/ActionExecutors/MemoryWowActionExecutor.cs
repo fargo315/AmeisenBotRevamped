@@ -5,7 +5,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.OffsetLists;
 using AmeisenBotRevamped.Utils;
-using Magic;
+using TrashMemCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,10 +17,10 @@ namespace AmeisenBotRevamped.ActionExecutors
     public class MemoryWowActionExecutor : IWowActionExecutor
     {
         #region Properties
-        public bool IsWoWHooked => BlackMagic.ReadByte(EndsceneAddress) == 0xE9;
+        public bool IsWoWHooked => TrashMem.ReadChar(EndsceneAddress) == 0xE9;
 
         public bool IsWorldLoaded { get; set; }
-        public int ProcessId => BlackMagic.ProcessId;
+        public int ProcessId => TrashMem.Process.Id;
         #endregion
 
         #region Internal Properties
@@ -28,7 +28,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         public const uint ENDSCENE_HOOK_OFFSET = 0x2;
 
         public IOffsetList OffsetList { get; private set; }
-        public BlackMagic BlackMagic { get; private set; }
+        public TrashMem TrashMem { get; private set; }
 
         public byte[] OriginalEndsceneBytes { get; private set; }
 
@@ -43,11 +43,11 @@ namespace AmeisenBotRevamped.ActionExecutors
         public Dictionary<(int, int), UnitReaction> ReactionCache { get; private set; }
         #endregion
 
-        public MemoryWowActionExecutor(BlackMagic blackMagic, IOffsetList offsetList)
+        public MemoryWowActionExecutor(TrashMem trashMem, IOffsetList offsetList)
         {
             ReactionCache = new Dictionary<(int, int), UnitReaction>();
             OriginalEndsceneBytes = offsetList.EndSceneBytes;
-            BlackMagic = blackMagic;
+            TrashMem = trashMem;
             OffsetList = offsetList;
 
             EndsceneAddress = GetEndScene();
@@ -97,7 +97,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         public void FaceUnit(WowPlayer player, WowPosition positionToFace)
         {
             float angle = BotMath.GetFacingAngle(player.Position, positionToFace);
-            BlackMagic.WriteFloat(player.BaseAddress + OffsetList.OffsetPlayerRotation, angle);
+            TrashMem.Write(player.BaseAddress + OffsetList.OffsetPlayerRotation, angle);
             SendKey(new IntPtr(0x41), 0, 0); // the "S" key to go a bit backwards TODO: find better method 0x53
         }
 
@@ -106,7 +106,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             const uint KEYDOWN = 0x100;
             const uint KEYUP = 0x101;
 
-            IntPtr windowHandle = BlackMagic.WindowHandle;
+            IntPtr windowHandle = TrashMem.Process.MainWindowHandle;
 
             // 0x20 = Spacebar (VK_SPACE)
             SafeNativeMethods.SendMessage(windowHandle, KEYDOWN, vKey, new IntPtr(0));
@@ -126,17 +126,17 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public void InteractWithGuid(ulong guid, ClickToMoveType clickToMoveType = ClickToMoveType.Interact)
         {
-            BlackMagic.WriteUInt64(OffsetList.StaticClickToMoveGuid, guid);
-            BlackMagic.WriteInt(OffsetList.StaticClickToMoveAction, (int)clickToMoveType);
+            TrashMem.Write(OffsetList.StaticClickToMoveGuid, guid);
+            TrashMem.Write(OffsetList.StaticClickToMoveAction, (int)clickToMoveType);
         }
 
         public void MoveToPosition(WowPosition targetPosition, ClickToMoveType clickToMoveType = ClickToMoveType.Move, float distance = 1.5f)
         {
-            BlackMagic.WriteFloat(OffsetList.StaticClickToMoveX, targetPosition.x);
-            BlackMagic.WriteFloat(OffsetList.StaticClickToMoveY, targetPosition.y);
-            BlackMagic.WriteFloat(OffsetList.StaticClickToMoveZ, targetPosition.z);
-            BlackMagic.WriteFloat(OffsetList.StaticClickToMoveDistance, distance);
-            BlackMagic.WriteInt(OffsetList.StaticClickToMoveAction, (int)clickToMoveType);
+            TrashMem.Write(OffsetList.StaticClickToMoveX, targetPosition.x);
+            TrashMem.Write(OffsetList.StaticClickToMoveY, targetPosition.y);
+            TrashMem.Write(OffsetList.StaticClickToMoveZ, targetPosition.z);
+            TrashMem.Write(OffsetList.StaticClickToMoveDistance, distance);
+            TrashMem.Write(OffsetList.StaticClickToMoveAction, (int)clickToMoveType);
         }
 
         public void TargetGuid(ulong guid)
@@ -159,22 +159,25 @@ namespace AmeisenBotRevamped.ActionExecutors
             if (command.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(command);
-                uint argCC = BlackMagic.AllocateMemory(bytes.Length + 1);
-                BlackMagic.WriteBytes(argCC, bytes);
+                uint argCC = TrashMem.AllocateMemory(bytes.Length + 1);
+                TrashMem.WriteBytes(argCC, bytes);
+
+                if (argCC == 0)
+                    return;
 
                 string[] asm = new string[]
                 {
-                $"MOV EAX, {(argCC)}",
-                "PUSH 0",
-                "PUSH EAX",
-                "PUSH EAX",
-                $"CALL {OffsetList.FunctionLuaDoString}",
-                "ADD ESP, 0xC",
-                "RETN",
+                    $"MOV EAX, {(argCC)}",
+                    "PUSH 0",
+                    "PUSH EAX",
+                    "PUSH EAX",
+                    $"CALL {OffsetList.FunctionLuaDoString}",
+                    "ADD ESP, 0xC",
+                    "RETN",
                 };
 
                 InjectAndExecute(asm, false);
-                BlackMagic.FreeMemory(argCC);
+                TrashMem.FreeMemory(argCC);
             }
         }
 
@@ -184,8 +187,8 @@ namespace AmeisenBotRevamped.ActionExecutors
             if (variable.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(variable);
-                uint argCC = BlackMagic.AllocateMemory(bytes.Length + 1);
-                BlackMagic.WriteBytes(argCC, bytes);
+                uint argCC = TrashMem.AllocateMemory(bytes.Length + 1);
+                TrashMem.WriteBytes(argCC, bytes);
 
                 string[] asmLocalText = new string[]
                 {
@@ -198,7 +201,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 };
 
                 string result = Encoding.UTF8.GetString(InjectAndExecute(asmLocalText, true));
-                BlackMagic.FreeMemory(argCC);
+                TrashMem.FreeMemory(argCC);
                 return result;
             }
             return "";
@@ -206,17 +209,18 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         private void SetupEndsceneHook()
         {
+            // first thing thats 5 bytes big is here
+            // we are going to replace this 5 bytes with
+            // our JMP instruction (JMP (1 byte) + Address (4 byte))
+            EndsceneAddress += ENDSCENE_HOOK_OFFSET;
+
             // if WoW is already hooked, unhook it
             if (IsWoWHooked) { DisposeHook(); }
-            else { OriginalEndsceneBytes = BlackMagic.ReadBytes(EndsceneAddress, 5); }
+            else { OriginalEndsceneBytes = TrashMem.ReadChars(EndsceneAddress, 5); }
 
             // if WoW is now/was unhooked, hook it
             if (!IsWoWHooked)
             {
-                // first thing thats 5 bytes big is here
-                // we are going to replace this 5 bytes with
-                // our JMP instruction (JMP (1 byte) + Address (4 byte))
-                EndsceneAddress += ENDSCENE_HOOK_OFFSET;
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tHooking EndScene at \"{EndsceneAddress.ToString("X")}\"", LogLevel.Verbose);
 
                 // the address that we will return to after 
@@ -224,77 +228,80 @@ namespace AmeisenBotRevamped.ActionExecutors
                 EndsceneReturnAddress = EndsceneAddress + 0x5;
 
                 // read our original EndScene
-                //OriginalEndsceneBytes = BlackMagic.ReadBytes(EndsceneAddress, 5);
+                //OriginalEndsceneBytes = TrashMem.ReadChars(EndsceneAddress, 5);
 
                 // integer to check if there is code waiting to be executed
-                CodeToExecuteAddress = BlackMagic.AllocateMemory(4);
-                BlackMagic.WriteInt(CodeToExecuteAddress, 0);
+                CodeToExecuteAddress = TrashMem.AllocateMemory(4);
+                TrashMem.Write(CodeToExecuteAddress, 0);
 
                 // integer to save the address of the return value
-                ReturnValueAddress = BlackMagic.AllocateMemory(4);
-                BlackMagic.WriteInt(ReturnValueAddress, 0);
+                ReturnValueAddress = TrashMem.AllocateMemory(4);
+                TrashMem.Write(ReturnValueAddress, 0);
 
                 // codecave to check if we need to execute something
-                CodecaveForCheck = BlackMagic.AllocateMemory(256);
+                CodecaveForCheck = TrashMem.AllocateMemory(1024);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at \"{CodecaveForCheck.ToString("X")}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
-                CodecaveForExecution = BlackMagic.AllocateMemory(2048);
+                CodecaveForExecution = TrashMem.AllocateMemory(8192);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at \"{CodecaveForExecution.ToString("X")}\"", LogLevel.Verbose);
 
-                BlackMagic.Asm.Clear();
+                TrashMem.Asm.Clear();
                 // save registers
-                BlackMagic.Asm.AddLine("PUSHFD");
-                BlackMagic.Asm.AddLine("PUSHAD");
+                TrashMem.Asm.AddLine("PUSHFD");
+                TrashMem.Asm.AddLine("PUSHAD");
 
                 // check for code to be executed
-                BlackMagic.Asm.AddLine($"MOV EBX, [{CodeToExecuteAddress}]");
-                BlackMagic.Asm.AddLine("TEST EBX, 1");
-                BlackMagic.Asm.AddLine("JE @out");
+                TrashMem.Asm.AddLine($"MOV EBX, [{CodeToExecuteAddress}]");
+                TrashMem.Asm.AddLine("TEST EBX, 1");
+                TrashMem.Asm.AddLine("JE @out");
 
                 // execute our stuff and get return address
-                BlackMagic.Asm.AddLine($"MOV EDX, {CodecaveForExecution}");
-                BlackMagic.Asm.AddLine("CALL EDX");
-                BlackMagic.Asm.AddLine($"MOV [{(ReturnValueAddress)}], EAX");
+                TrashMem.Asm.AddLine($"MOV EDX, {CodecaveForExecution}");
+                TrashMem.Asm.AddLine("CALL EDX");
+                TrashMem.Asm.AddLine($"MOV [{ReturnValueAddress}], EAX");
 
                 // finish up our execution
-                BlackMagic.Asm.AddLine("@out:");
-                BlackMagic.Asm.AddLine("MOV EDX, 0");
-                BlackMagic.Asm.AddLine($"MOV [{CodeToExecuteAddress}], EDX");
+                TrashMem.Asm.AddLine("@out:");
+                TrashMem.Asm.AddLine("MOV EDX, 0");
+                TrashMem.Asm.AddLine($"MOV [{CodeToExecuteAddress}], EDX");
 
                 // restore registers
-                BlackMagic.Asm.AddLine("POPAD");
-                BlackMagic.Asm.AddLine("POPFD");
+                TrashMem.Asm.AddLine("POPAD");
+                TrashMem.Asm.AddLine("POPFD");
 
                 // needed to determine the position where the original
                 // asm is going to be placed
-                int asmLenght = BlackMagic.Asm.Assemble().Length;
+                int asmLenght = TrashMem.Asm.Assemble().Length;
 
                 // inject the instructions into our codecave
-                BlackMagic.Asm.Inject(CodecaveForCheck);
+                byte[] asmBytes = TrashMem.Asm.Assemble();
+                TrashMem.WriteBytes(CodecaveForCheck, asmBytes);
                 // ---------------------------------------------------
                 // End of the code that checks if there is asm to be
                 // executed on our hook
                 // ---------------------------------------------------
 
                 // Prepare to replace the instructions inside WoW
-                BlackMagic.Asm.Clear();
+                TrashMem.Asm.Clear();
 
                 // do the original EndScene stuff after we restored the registers
                 // and insert it after our code
-                BlackMagic.WriteBytes(CodecaveForCheck + (uint)asmLenght, OriginalEndsceneBytes);
+                TrashMem.WriteBytes(CodecaveForCheck + (uint)asmLenght, OriginalEndsceneBytes);
 
                 // return to original function after we're done with our stuff
-                BlackMagic.Asm.AddLine($"JMP {EndsceneReturnAddress}");
-                BlackMagic.Asm.Inject((CodecaveForCheck + (uint)asmLenght) + 5);
-                BlackMagic.Asm.Clear();
+                TrashMem.Asm.AddLine($"JMP {EndsceneReturnAddress}");
+                byte[] asmBytes2 = TrashMem.Asm.Assemble();
+                TrashMem.WriteBytes(CodecaveForCheck + (uint)asmLenght + 5, asmBytes2);
+                TrashMem.Asm.Clear();
                 // ---------------------------------------------------
                 // End of doing the original stuff and returning to
                 // the original instruction
                 // ---------------------------------------------------
 
                 // modify original EndScene instructions to start the hook
-                BlackMagic.Asm.AddLine($"JMP {CodecaveForCheck}");
-                BlackMagic.Asm.Inject(EndsceneAddress);
+                TrashMem.Asm.AddLine($"JMP {CodecaveForCheck}");
+                byte[] asmBytes3 = TrashMem.Asm.Assemble();
+                TrashMem.WriteBytes(EndsceneAddress, asmBytes3);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
                 // we should've hooked WoW now
             }
@@ -307,12 +314,12 @@ namespace AmeisenBotRevamped.ActionExecutors
                 if (IsWoWHooked)
                 {
                     AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDisposing Hook", LogLevel.Verbose);
-                    BlackMagic.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
+                    TrashMem.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
 
-                    BlackMagic.FreeMemory(CodecaveForCheck);
-                    BlackMagic.FreeMemory(CodecaveForExecution);
-                    BlackMagic.FreeMemory(CodeToExecuteAddress);
-                    BlackMagic.FreeMemory(ReturnValueAddress);
+                    TrashMem.FreeMemory(CodecaveForCheck);
+                    TrashMem.FreeMemory(CodecaveForExecution);
+                    TrashMem.FreeMemory(CodeToExecuteAddress);
+                    TrashMem.FreeMemory(ReturnValueAddress);
                 }
             }
             catch { }
@@ -320,10 +327,10 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         private uint GetEndScene()
         {
-            uint pDevice = BlackMagic.ReadUInt(OffsetList.StaticEndSceneDevice);
-            uint pEnd = BlackMagic.ReadUInt(pDevice + OffsetList.EndSceneOffsetDevice);
-            uint pScene = BlackMagic.ReadUInt(pEnd);
-            return BlackMagic.ReadUInt(pScene + OffsetList.EndSceneOffset);
+            uint pDevice = TrashMem.ReadUInt32(OffsetList.StaticEndSceneDevice);
+            uint pEnd = TrashMem.ReadUInt32(pDevice + OffsetList.EndSceneOffsetDevice);
+            uint pScene = TrashMem.ReadUInt32(pEnd);
+            return TrashMem.ReadUInt32(pScene + OffsetList.EndSceneOffset);
         }
 
         public byte[] InjectAndExecute(string[] asm, bool readReturnBytes)
@@ -343,20 +350,21 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 IsInjectionUsed = true;
                 // preparing to inject the given ASM
-                BlackMagic.Asm.Clear();
+                TrashMem.Asm.Clear();
                 // add all lines
                 foreach (string s in asm)
                 {
-                    BlackMagic.Asm.AddLine(s);
+                    TrashMem.Asm.AddLine(s);
                 }
 
                 // now there is code to be executed
-                BlackMagic.WriteInt(CodeToExecuteAddress, 1);
+                TrashMem.Write(CodeToExecuteAddress, 1);
                 // inject it
-                BlackMagic.Asm.Inject(CodecaveForExecution);
+                byte[] asmBytes = TrashMem.Asm.Assemble();
+                TrashMem.WriteBytes(CodecaveForExecution, asmBytes);
 
                 // wait for the code to be executed
-                while (BlackMagic.ReadInt(CodeToExecuteAddress) > 0) { Thread.Sleep(1); }
+                while (TrashMem.ReadInt32(CodeToExecuteAddress) > 0) { Thread.Sleep(1); }
 
                 // if we want to read the return value do it otherwise we're done
                 if (readReturnBytes)
@@ -364,15 +372,15 @@ namespace AmeisenBotRevamped.ActionExecutors
                     byte buffer = new byte();
                     try
                     {
-                        uint dwAddress = BlackMagic.ReadUInt(ReturnValueAddress);
+                        uint dwAddress = TrashMem.ReadUnmanaged<uint>(ReturnValueAddress);
 
                         // read all parameter-bytes until we the buffer is 0
-                        buffer = BlackMagic.ReadByte(dwAddress);
+                        buffer = TrashMem.ReadChar(dwAddress);
                         while (buffer != 0)
                         {
                             returnBytes.Add(buffer);
-                            dwAddress = dwAddress + 1;
-                            buffer = BlackMagic.ReadByte(dwAddress);
+                            dwAddress++;
+                            buffer = TrashMem.ReadChar(dwAddress);
                         }
                     }
                     catch (Exception e)
@@ -385,14 +393,14 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e.ToString()}", LogLevel.Error);
                 // now there is no more code to be executed
-                BlackMagic.WriteInt(CodeToExecuteAddress, 0);
+                TrashMem.ReadUnmanaged<uint>(CodeToExecuteAddress, 0);
             }
             IsInjectionUsed = false;
 
             return returnBytes.ToArray();
         }
 
-        public void AntiAfk() => BlackMagic.WriteInt(OffsetList.StaticTickCount, Environment.TickCount);
+        public void AntiAfk() => TrashMem.Write(OffsetList.StaticTickCount, Environment.TickCount);
 
         public void Jump() => SendKey(new IntPtr(0x20));
 
@@ -412,32 +420,67 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB)
         {
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tGetting relation of: {wowUnitA.Name} to {wowUnitB.Name}", LogLevel.Verbose);
+
             if (ReactionCache.ContainsKey((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)))
             {
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCached relation of: {wowUnitA.Name} to {wowUnitB.Name} is {ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)].ToString()}", LogLevel.Verbose);
                 return ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)];
             }
 
+            // integer to save the reaction
+            uint reactionValue = TrashMem.AllocateMemory(4);
+            TrashMem.Write(reactionValue, 0);
+
             string[] asm = new string[]
             {
-                "PUSH " + wowUnitA.BaseAddress,
-                "MOV ECX, " + wowUnitB.BaseAddress,
-                "CALL " + OffsetList.FunctionGetUnitReaction,
+                $"PUSH " + wowUnitA.BaseAddress,
+                $"MOV ECX, " + wowUnitB.BaseAddress,
+                $"CALL " + OffsetList.FunctionGetUnitReaction,
+                $"MOV [{reactionValue}], EAX",
                 "RETN",
             };
 
-            UnitReaction reaction = (UnitReaction)Convert.ToInt32(InjectAndExecute(asm, true));
-            ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
+            byte[] reactionBytes = InjectAndExecute(asm, true);
+
+            /*if (reactionBytes.Length == 0)
+            {
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is UnitReaction.Unknown", LogLevel.Verbose);
+                return UnitReaction.Unknown;
+            }*/
+            UnitReaction reaction;
+
+            try
+            {
+                reaction = (UnitReaction)TrashMem.ReadInt32(reactionValue);
+
+                //UnitReaction reaction = (UnitReaction)BitConverter.ToInt32(reactionBytes, 0);
+
+                ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
+            }
+            catch
+            {
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tFailed to read relation of: {wowUnitA.Name} to {wowUnitB.Name} is Unknown", LogLevel.Verbose);
+                return UnitReaction.Unknown;
+            }
+            finally
+            {
+                TrashMem.FreeMemory(reactionValue);
+            }
+
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is {reaction.ToString()}", LogLevel.Verbose);
             return reaction;
         }
 
         public void RightClickUnit(WowUnit wowUnit)
         {
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDoing RightClick: {wowUnit.Name}", LogLevel.Verbose);
             string[] asm = new string[]
             {
                 $"MOV ECX, {wowUnit.BaseAddress}",
                 "MOV EAX, DWORD[ECX]",
                 "MOV EAX, DWORD[EAX + 88H]",
-                "call EAX",
+                "CALL EAX",
                 "RETN",
             };
             InjectAndExecute(asm, false);

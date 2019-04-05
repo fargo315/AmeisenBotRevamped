@@ -70,8 +70,15 @@ namespace AmeisenBotRevamped.AI.StateMachine
 
         private void CStateMachineUpdate(object sender, ElapsedEventArgs e)
         {
-            CurrentState.Execute();
-            WowActionExecutor.AntiAfk();
+            try
+            {
+                CurrentState.Execute();
+                WowActionExecutor.AntiAfk();
+            }
+            catch (Exception ex)
+            {
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
+            }
         }
 
         public void SwitchState(Type newType)

@@ -40,13 +40,13 @@
         public uint OffsetWowObjectGuid => 0x30;
         public uint OffsetWowObjectDescriptor => 0x8;
         public uint OffsetWowUnitPosition => 0x798;
-        public uint DescriptorOffsetFactionTemplate => 0xDC;
         public uint OffsetGameObjectPosition => 0xE8;
 
         public uint DescriptorOffsetTargetGuid => 0x48;
         public uint DescriptorOffsetLevel => 0xD8;
         public uint DescriptorOffsetRace => 0xDC;
         public uint DescriptorOffsetClass => 0xEC;
+        public uint DescriptorOffsetFactionTemplate => 0xDC;
 
         public uint DescriptorOffsetHealth => 0x60;
         public uint DescriptorOffsetMaxHealth => 0x80;
@@ -111,7 +111,7 @@
         public uint StaticRaidGroupStart => 0xBF8258;
         public uint RaidOffsetPlayer => 0x50;
 
-        public uint StaticCharacterSlotSelected => 0x6C436C;
+        public uint StaticCharacterSlotSelected => 0xAC436C;
 
         public uint OffsetCurrentlyCastingSpellId => 0xA6C;
         public uint OffsetCurrentlyChannelingSpellId => 0xA80;

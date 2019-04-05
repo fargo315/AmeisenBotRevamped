@@ -11,7 +11,7 @@ using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.OffsetLists;
 using AmeisenBotRevamped.Utils;
-using Magic;
+using TrashMemCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace AmeisenBotRevamped.Gui
         {
             InitializeComponent();
 
-            AmeisenBotLogger.Instance.ActiveLogLevel = LogLevel.Debug;
+            AmeisenBotLogger.Instance.ActiveLogLevel = LogLevel.Verbose;
             AmeisenBotLogger.Instance.Start();
             AmeisenBotLogger.Instance.Log("AmeisenBotGui loading...");
 
@@ -208,12 +208,12 @@ namespace AmeisenBotRevamped.Gui
         {
             AmeisenBotLogger.Instance.Log($"[{wowProcess.Id.ToString("X")}]\tSetting up the AmeisenBot...");
 
-            BlackMagic blackMagic = new BlackMagic(wowProcess.Id);
+            TrashMem trashMem = new TrashMem(wowProcess);
 
             IAutologinProvider autologinProvider = new SimpleAutologinProvider();
-            IWowDataAdapter wowDataAdapter = new MemoryWowDataAdapter(blackMagic, OffsetList);
+            IWowDataAdapter wowDataAdapter = new MemoryWowDataAdapter(trashMem, OffsetList);
 
-            return new AmeisenBot(blackMagic, wowDataAdapter, autologinProvider, wowProcess);
+            return new AmeisenBot(trashMem, wowDataAdapter, autologinProvider, wowProcess);
         }
 
         private void AttachBot(AmeisenBot ameisenBot)
@@ -228,7 +228,7 @@ namespace AmeisenBotRevamped.Gui
             {
                 AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tAttaching AmeisenBot...");
 
-                IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.BlackMagic, OffsetList);
+                IWowActionExecutor wowActionExecutor = new MemoryWowActionExecutor(ameisenBot.TrashMem, OffsetList);
                 IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient(Settings.AmeisenNavmeshServerIp, Settings.AmeisenNavmeshServerPort, ameisenBot.Process.Id);
                 IWowEventAdapter wowEventAdapter = new LuaHookWowEventAdapter(wowActionExecutor);
                 ameisenBot.Attach(wowActionExecutor, pathfindingClient, wowEventAdapter, new BasicMeleeMovementProvider(), null);
