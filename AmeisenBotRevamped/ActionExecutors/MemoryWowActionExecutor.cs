@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using TrashMemCore.Objects;
+using Fasm;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
@@ -34,10 +36,10 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public uint EndsceneAddress { get; private set; }
         public uint EndsceneReturnAddress { get; private set; }
-        public uint CodeToExecuteAddress { get; private set; }
-        public uint ReturnValueAddress { get; private set; }
-        public uint CodecaveForCheck { get; private set; }
-        public uint CodecaveForExecution { get; private set; }
+        public MemoryAllocation CodeToExecuteAddress { get; private set; }
+        public MemoryAllocation ReturnValueAddress { get; private set; }
+        public MemoryAllocation CodecaveForCheck { get; private set; }
+        public MemoryAllocation CodecaveForExecution { get; private set; }
         public bool IsInjectionUsed { get; private set; }
 
         public Dictionary<(int, int), UnitReaction> ReactionCache { get; private set; }
@@ -159,15 +161,15 @@ namespace AmeisenBotRevamped.ActionExecutors
             if (command.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(command);
-                uint argCC = TrashMem.AllocateMemory(bytes.Length + 1);
-                TrashMem.WriteBytes(argCC, bytes);
+                MemoryAllocation memAlloc = TrashMem.AllocateMemory(bytes.Length + 1);
+                TrashMem.WriteBytes(memAlloc.Address, bytes);
 
-                if (argCC == 0)
+                if (memAlloc.Address == 0)
                     return;
 
                 string[] asm = new string[]
                 {
-                    $"MOV EAX, {(argCC)}",
+                    $"MOV EAX, {memAlloc.Address}",
                     "PUSH 0",
                     "PUSH EAX",
                     "PUSH EAX",
@@ -177,7 +179,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 };
 
                 InjectAndExecute(asm, false);
-                TrashMem.FreeMemory(argCC);
+                TrashMem.FreeMemory(memAlloc);
             }
         }
 
@@ -187,21 +189,21 @@ namespace AmeisenBotRevamped.ActionExecutors
             if (variable.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(variable);
-                uint argCC = TrashMem.AllocateMemory(bytes.Length + 1);
-                TrashMem.WriteBytes(argCC, bytes);
+                MemoryAllocation memAlloc = TrashMem.AllocateMemory(bytes.Length + 1);
+                TrashMem.WriteBytes(memAlloc.Address, bytes);
 
                 string[] asmLocalText = new string[]
                 {
                     $"CALL {OffsetList.FunctionGetActivePlayerObject}",
                     "MOV ECX, EAX",
                     "PUSH -1",
-                    $"PUSH {(argCC)}",
+                    $"PUSH {memAlloc.Address}",
                     $"CALL {OffsetList.FunctionGetLocalizedText}",
                     "RETN",
                 };
 
                 string result = Encoding.UTF8.GetString(InjectAndExecute(asmLocalText, true));
-                TrashMem.FreeMemory(argCC);
+                TrashMem.FreeMemory(memAlloc);
                 return result;
             }
             return "";
@@ -221,7 +223,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             // if WoW is now/was unhooked, hook it
             if (!IsWoWHooked)
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tHooking EndScene at \"{EndsceneAddress.ToString("X")}\"", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tHooking EndScene at 0x\"{EndsceneAddress.ToString("X")}\"", LogLevel.Verbose);
 
                 // the address that we will return to after 
                 // the jump wer'e going to inject
@@ -232,18 +234,18 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // integer to check if there is code waiting to be executed
                 CodeToExecuteAddress = TrashMem.AllocateMemory(4);
-                TrashMem.Write(CodeToExecuteAddress, 0);
+                TrashMem.Write(CodeToExecuteAddress.Address, 0);
 
                 // integer to save the address of the return value
                 ReturnValueAddress = TrashMem.AllocateMemory(4);
-                TrashMem.Write(ReturnValueAddress, 0);
+                TrashMem.Write(ReturnValueAddress.Address, 0);
 
                 // codecave to check if we need to execute something
-                CodecaveForCheck = TrashMem.AllocateMemory(1024);
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at \"{CodecaveForCheck.ToString("X")}\"", LogLevel.Verbose);
+                CodecaveForCheck = TrashMem.AllocateMemory(128);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at 0x\"{CodecaveForCheck.Address.ToString("X")}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
-                CodecaveForExecution = TrashMem.AllocateMemory(8192);
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at \"{CodecaveForExecution.ToString("X")}\"", LogLevel.Verbose);
+                CodecaveForExecution = TrashMem.AllocateMemory(1024);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at 0x\"{CodecaveForExecution.Address.ToString("X")}\"", LogLevel.Verbose);
 
                 TrashMem.Asm.Clear();
                 // save registers
@@ -251,31 +253,32 @@ namespace AmeisenBotRevamped.ActionExecutors
                 TrashMem.Asm.AddLine("PUSHAD");
 
                 // check for code to be executed
-                TrashMem.Asm.AddLine($"MOV EBX, [{CodeToExecuteAddress}]");
+                TrashMem.Asm.AddLine($"MOV EBX, [{CodeToExecuteAddress.Address}]");
                 TrashMem.Asm.AddLine("TEST EBX, 1");
                 TrashMem.Asm.AddLine("JE @out");
 
                 // execute our stuff and get return address
-                TrashMem.Asm.AddLine($"MOV EDX, {CodecaveForExecution}");
+                TrashMem.Asm.AddLine($"MOV EDX, {CodecaveForExecution.Address}");
                 TrashMem.Asm.AddLine("CALL EDX");
-                TrashMem.Asm.AddLine($"MOV [{ReturnValueAddress}], EAX");
+                TrashMem.Asm.AddLine($"MOV [{ReturnValueAddress.Address}], EAX");
 
                 // finish up our execution
                 TrashMem.Asm.AddLine("@out:");
                 TrashMem.Asm.AddLine("MOV EDX, 0");
-                TrashMem.Asm.AddLine($"MOV [{CodeToExecuteAddress}], EDX");
+                TrashMem.Asm.AddLine($"MOV [{CodeToExecuteAddress.Address}], EDX");
 
                 // restore registers
                 TrashMem.Asm.AddLine("POPAD");
                 TrashMem.Asm.AddLine("POPFD");
 
+                byte[] asmBytes = TrashMem.Asm.Assemble();
+
                 // needed to determine the position where the original
                 // asm is going to be placed
-                int asmLenght = TrashMem.Asm.Assemble().Length;
+                int asmLenght = asmBytes.Length;
 
                 // inject the instructions into our codecave
-                byte[] asmBytes = TrashMem.Asm.Assemble();
-                TrashMem.WriteBytes(CodecaveForCheck, asmBytes);
+                TrashMem.Asm.Inject(CodecaveForCheck.Address);
                 // ---------------------------------------------------
                 // End of the code that checks if there is asm to be
                 // executed on our hook
@@ -286,12 +289,12 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // do the original EndScene stuff after we restored the registers
                 // and insert it after our code
-                TrashMem.WriteBytes(CodecaveForCheck + (uint)asmLenght, OriginalEndsceneBytes);
+                TrashMem.WriteBytes(CodecaveForCheck.Address + (uint)asmLenght, OriginalEndsceneBytes);
 
                 // return to original function after we're done with our stuff
                 TrashMem.Asm.AddLine($"JMP {EndsceneReturnAddress}");
-                byte[] asmBytes2 = TrashMem.Asm.Assemble();
-                TrashMem.WriteBytes(CodecaveForCheck + (uint)asmLenght + 5, asmBytes2);
+                //byte[] asmBytes2 = TrashMem.Asm.Assemble();
+                TrashMem.Asm.Inject(CodecaveForCheck.Address + (uint)asmLenght + 5);
                 TrashMem.Asm.Clear();
                 // ---------------------------------------------------
                 // End of doing the original stuff and returning to
@@ -299,9 +302,9 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // ---------------------------------------------------
 
                 // modify original EndScene instructions to start the hook
-                TrashMem.Asm.AddLine($"JMP {CodecaveForCheck}");
-                byte[] asmBytes3 = TrashMem.Asm.Assemble();
-                TrashMem.WriteBytes(EndsceneAddress, asmBytes3);
+                TrashMem.Asm.AddLine($"JMP {CodecaveForCheck.Address}");
+                //byte[] asmBytes3 = TrashMem.Asm.Assemble();
+                TrashMem.Asm.Inject(EndsceneAddress);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
                 // we should've hooked WoW now
             }
@@ -358,13 +361,13 @@ namespace AmeisenBotRevamped.ActionExecutors
                 }
 
                 // now there is code to be executed
-                TrashMem.Write(CodeToExecuteAddress, 1);
+                TrashMem.Write(CodeToExecuteAddress.Address, 1);
                 // inject it
-                byte[] asmBytes = TrashMem.Asm.Assemble();
-                TrashMem.WriteBytes(CodecaveForExecution, asmBytes);
+                //byte[] asmBytes = TrashMem.Asm.Assemble();
+                TrashMem.Asm.Inject(CodecaveForExecution.Address);
 
                 // wait for the code to be executed
-                while (TrashMem.ReadInt32(CodeToExecuteAddress) > 0) { Thread.Sleep(1); }
+                while (TrashMem.ReadInt32(CodeToExecuteAddress.Address) > 0) { Thread.Sleep(1); }
 
                 // if we want to read the return value do it otherwise we're done
                 if (readReturnBytes)
@@ -372,7 +375,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                     byte buffer = new byte();
                     try
                     {
-                        uint dwAddress = TrashMem.ReadUnmanaged<uint>(ReturnValueAddress);
+                        uint dwAddress = TrashMem.ReadUnmanaged<uint>(ReturnValueAddress.Address);
 
                         // read all parameter-bytes until we the buffer is 0
                         buffer = TrashMem.ReadChar(dwAddress);
@@ -393,7 +396,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e.ToString()}", LogLevel.Error);
                 // now there is no more code to be executed
-                TrashMem.ReadUnmanaged<uint>(CodeToExecuteAddress, 0);
+                TrashMem.ReadUnmanaged<uint>(CodeToExecuteAddress.Address, 0);
             }
             IsInjectionUsed = false;
 
@@ -441,15 +444,15 @@ namespace AmeisenBotRevamped.ActionExecutors
             }
 
             // integer to save the reaction
-            uint reactionValue = TrashMem.AllocateMemory(4);
-            TrashMem.Write(reactionValue, 0);
+            MemoryAllocation memAlloc = TrashMem.AllocateMemory(4);
+            TrashMem.Write(memAlloc.Address, 0);
 
             string[] asm = new string[]
             {
                 $"PUSH " + wowUnitA.BaseAddress,
                 $"MOV ECX, " + wowUnitB.BaseAddress,
                 $"CALL " + OffsetList.FunctionGetUnitReaction,
-                $"MOV [{reactionValue}], EAX",
+                $"MOV [{memAlloc.Address}], EAX",
                 "RETN",
             };
 
@@ -464,7 +467,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
             try
             {
-                reaction = (UnitReaction)TrashMem.ReadInt32(reactionValue);
+                reaction = (UnitReaction)TrashMem.ReadInt32(memAlloc.Address);
 
                 //UnitReaction reaction = (UnitReaction)BitConverter.ToInt32(reactionBytes, 0);
 
@@ -477,7 +480,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             }
             finally
             {
-                TrashMem.FreeMemory(reactionValue);
+                TrashMem.FreeMemory(memAlloc);
             }
 
             AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is {reaction.ToString()}", LogLevel.Verbose);

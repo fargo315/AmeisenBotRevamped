@@ -39,9 +39,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fasm.NET">
-      <HintPath>..\TrashMem\Fasm.NET.dll</HintPath>
-    </Reference>
     <Reference Include="fasmdll_managed, Version=1.0.5080.15965, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Blackmagic\fasmdll_managed.dll</HintPath>

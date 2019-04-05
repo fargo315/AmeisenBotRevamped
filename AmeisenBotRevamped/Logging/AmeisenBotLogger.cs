@@ -84,7 +84,7 @@ namespace AmeisenBotRevamped.Logging
 
         private void DoLogWork()
         {
-            while (Enabled || LogQueue.Count > 0)
+            while (Enabled || !LogQueue.IsEmpty)
             {
                 if (LogQueue.TryDequeue(out LogEntry activeEntry))
                 {

@@ -57,6 +57,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="TrashMem">
+      <HintPath>..\TrashMem\TrashMem.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\StateMachine\AmeisenBotStateMachineTests.cs" />
