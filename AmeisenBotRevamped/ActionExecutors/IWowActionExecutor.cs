@@ -47,5 +47,8 @@ namespace AmeisenBotRevamped.ActionExecutors
         List<string> GetDebuffs(string luaunitName);
 
         double GetSpellCooldown(string spellName);
+
+        void CofirmBop();
+        void CofirmReadyCheck(bool isReady);
     }
 }
