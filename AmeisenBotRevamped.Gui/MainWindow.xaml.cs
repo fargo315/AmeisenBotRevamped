@@ -22,6 +22,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Threading;
 
 namespace AmeisenBotRevamped.Gui
 {
@@ -33,8 +34,8 @@ namespace AmeisenBotRevamped.Gui
         private List<AmeisenBot> AmeisenBots { get; set; }
         private List<BotView> BotViews { get; set; }
 
-        private Timer ViewUpdateTimer { get; set; }
-        private Timer BotFleetTimer { get; set; }
+        private System.Timers.Timer ViewUpdateTimer { get; set; }
+        private System.Timers.Timer BotFleetTimer { get; set; }
 
         private Settings Settings { get; set; }
 
@@ -57,10 +58,10 @@ namespace AmeisenBotRevamped.Gui
             OffsetList = new Wotlk335a12340OffsetList();
             WowStartupMap = new Dictionary<string, bool>();
 
-            ViewUpdateTimer = new Timer(1000);
+            ViewUpdateTimer = new System.Timers.Timer(1000);
             ViewUpdateTimer.Elapsed += CUpdateViews;
 
-            BotFleetTimer = new Timer(1000);
+            BotFleetTimer = new System.Timers.Timer(2000);
             BotFleetTimer.Elapsed += CBotFleetTimer;
 
             LoadSettings();
@@ -101,10 +102,10 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
-        private void ButtonSettings_Click(object sender, RoutedEventArgs e)
+        private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            AmeisenBotLogger.Instance.Log($"Checking BotFleet...", LogLevel.Verbose);
-            CheckForBotFleet();
+            ScanForWows();
+            RefreshActiveWows();
         }
 
         private void ButtonToggleFleet_Click(object sender, RoutedEventArgs e)
@@ -161,6 +162,10 @@ namespace AmeisenBotRevamped.Gui
             }
         }
 
+        private void SaveSetings()
+        {
+            File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(Settings));
+        }
 
         private void ScanForWows()
         {
@@ -175,32 +180,37 @@ namespace AmeisenBotRevamped.Gui
             AmeisenBots = AmeisenBotsNew;
         }
 
-        private void RefreshActiveWows()
+        private void RefreshActiveWows(bool autoAttach = false)
         {
             mainWrappanel.Children.Clear();
             BotViews = new List<BotView>();
 
-            foreach (AmeisenBot ameisenBot in AmeisenBots)
+            try
             {
-                if (ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed)
+                foreach (AmeisenBot ameisenBot in AmeisenBots)
                 {
-                    AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tRemoving crashed AmeisenBot...");
+                    if (ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed || ameisenBot.Process.HasExited)
+                    {
+                        AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tRemoving crashed AmeisenBot...");
 
-                    ameisenBot.Detach();
-                    GC.Collect();
+                        ameisenBot.Detach();
+                        GC.Collect();
 
-                    WowStartupMap[ameisenBot.CharacterName] = false;
-                    AmeisenBots.Remove(ameisenBot);
-                    break;
-                }
+                        WowStartupMap[ameisenBot.CharacterName] = false;
+                        AmeisenBots.Remove(ameisenBot);
+                        break;
+                    }
 
-                AddBotToView(ameisenBot);
+                    AddBotToView(ameisenBot);
 
-                if (!ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
-                {
-                    AttachBot(ameisenBot);
+                    if (autoAttach && !ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
+                    {
+                        // Causing random crashes, don't know why
+                        //AttachBot(ameisenBot);
+                    }
                 }
             }
+            catch { }
         }
 
 
@@ -273,15 +283,20 @@ namespace AmeisenBotRevamped.Gui
 
                         if (avaiableBots.Count < 1)
                         {
-                            if (Settings.WowExecutableFilePath != "" && File.Exists(Settings.WowExecutableFilePath))
+                            if (Settings.WowExePath != "" && File.Exists(Settings.WowExePath))
                             {
                                 WowStartupMap[wowAccount.CharacterName] = true;
 
-                                Process newWowProcess = Process.Start(Settings.WowExecutableFilePath);
+                                Process newWowProcess = Process.Start(Settings.WowExePath);
                                 AmeisenBotLogger.Instance.Log($"[{newWowProcess.Id.ToString("X")}]\tStarting new WoW process..");
                                 newWowProcess.WaitForInputIdle();
 
                                 ameisenBot = SetupAmeisenBot(newWowProcess);
+
+                                if (Settings.WowPositions.ContainsKey(wowAccount.CharacterName))
+                                    ameisenBot.SetWindowPosition(Settings.WowPositions[wowAccount.CharacterName]);
+                                Thread.Sleep(200);
+
                                 AmeisenBots.Add(ameisenBot);
                             }
                             else
@@ -316,18 +331,18 @@ namespace AmeisenBotRevamped.Gui
 
             try
             {
-                Dispatcher.Invoke(() => RefreshActiveWows());
+                Dispatcher.Invoke(() => RefreshActiveWows(true));
             }
             catch { }
         }
 
         private List<WowAccount> ReadBotFleetAccounts()
         {
-            AmeisenBotLogger.Instance.Log($"Reading FleetConfig from \"{Settings.BotListFilePath}\"");
+            AmeisenBotLogger.Instance.Log($"Reading FleetConfig from \"{Settings.BotFleetConfig}\"");
 
-            if (Settings.BotListFilePath != "" && File.Exists(Settings.BotListFilePath))
+            if (Settings.BotFleetConfig != "" && File.Exists(Settings.BotFleetConfig))
             {
-                return JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotListFilePath));
+                return JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotFleetConfig));
             }
             else
             {
@@ -360,6 +375,15 @@ namespace AmeisenBotRevamped.Gui
             }
 
             return false;
+        }
+
+        private void ButtonSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow(Settings, AmeisenBots);
+            settingsWindow.ShowDialog();
+
+            Settings = settingsWindow.Settings;
+            SaveSetings();
         }
     }
 }

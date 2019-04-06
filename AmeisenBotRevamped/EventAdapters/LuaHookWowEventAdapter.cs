@@ -41,10 +41,12 @@ namespace AmeisenBotRevamped.EventAdapters
             }
             EventReaderTimer.Start();
         }
+
         public void Stop()
         {
             AmeisenBotLogger.Instance.Log($"[{WowActionExecutor.ProcessId.ToString("X")}]\tStopping EventHook...");
-            WowActionExecutor.LuaDoString($"abFrame:UnregisterAllEvents(); abFrame:SetScript(\"OnEvent\", nil);");
+            WowActionExecutor.LuaDoString($"abFrame:UnregisterAllEvents();");
+            WowActionExecutor.LuaDoString($"abFrame:SetScript(\"OnEvent\", nil);");
             EventReaderTimer.Stop();
         }
 

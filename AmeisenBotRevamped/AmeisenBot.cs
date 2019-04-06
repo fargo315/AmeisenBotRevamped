@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
 using TrashMemCore;
+using static AmeisenBotRevamped.ActionExecutors.SafeNativeMethods;
 
 namespace AmeisenBotRevamped
 {
@@ -38,7 +39,7 @@ namespace AmeisenBotRevamped
         public Process Process { get; private set; }
         public bool Attached { get; private set; }
 
-        public AmeisenBot(TrashMem trashMem, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process, IItemComparator itemComparator = null)
+        public AmeisenBot(TrashMem trashMem, IWowDataAdapter wowDataAdapter, IAutologinProvider autologinProvider, Process process)
         {
             Attached = false;
             AutologinProvider = autologinProvider;
@@ -47,19 +48,18 @@ namespace AmeisenBotRevamped
             WowDataAdapter = wowDataAdapter;
             WowDataAdapter.OnGamestateChanged = COnGamestateChanged;
             TrashMem = trashMem;
-
-            if (itemComparator == null)
-                itemComparator = new BasicItemLevelComparator(wowDataAdapter);
-
-            CharacterManager = new WowCharacterManager(WowDataAdapter, WowActionExecutor, itemComparator);
-
+            
             AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }
 
-        public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter, IMovementProvider movementProvider, ISpellStrategy spellStrategy)
+        public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter, IMovementProvider movementProvider, ISpellStrategy spellStrategy, IItemComparator itemComparator = null)
         {
             Attached = true;
             WowPathfindingClient = wowPathfindingClient;
+
+            if (itemComparator == null)
+                itemComparator = new BasicItemLevelComparator(WowDataAdapter);
+
             WowDataAdapter?.StartObjectUpdates();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted ObjectUpdates...");
 
@@ -70,7 +70,7 @@ namespace AmeisenBotRevamped
             WowEventAdapter = wowEventAdapter;
             WowEventAdapter?.Start();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted EventAdapter...");
-
+            
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
             WowEventAdapter?.Subscribe(WowEvents.LOOT_OPENED, OnLootWindowOpened);
             WowEventAdapter?.Subscribe(WowEvents.RESURRECT_REQUEST, OnResurrectRequest);
@@ -79,13 +79,15 @@ namespace AmeisenBotRevamped
             WowEventAdapter?.Subscribe(WowEvents.CONFIRM_LOOT_ROLL, OnConfirmBindOnPickup);
             WowEventAdapter?.Subscribe(WowEvents.READY_CHECK, OnReadyCheck);
             WowEventAdapter?.Subscribe(WowEvents.DELETE_ITEM_CONFIRM, OnConfirmDeleteItem);
-            WowEventAdapter?.Subscribe(WowEvents.ITEM_PUSH, OnNewItemReceived);
-            
-            WowEventAdapter?.Subscribe(WowEvents.COMBAT_LOG_EVENT_UNFILTERED, OnCombatLogEvent);
+            WowEventAdapter?.Subscribe(WowEvents.ITEM_PUSH, OnNewItemReceived);            
+            //WowEventAdapter?.Subscribe(WowEvents.COMBAT_LOG_EVENT_UNFILTERED, OnCombatLogEvent);
 
-            StateMachine = new AmeisenBotStateMachine(WowDataAdapter, wowActionExecutor, wowPathfindingClient, movementProvider, spellStrategy);
+            StateMachine = new AmeisenBotStateMachine(WowDataAdapter, WowActionExecutor, WowPathfindingClient, movementProvider, spellStrategy);
             StateMachine?.Start();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted StateMachine...");
+
+            CharacterManager = new WowCharacterManager(WowDataAdapter, WowActionExecutor, itemComparator);
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted CharacterManager...");
 
             CharacterManager?.UpdateFullCharacter();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tUpdated Character...");
@@ -182,6 +184,36 @@ namespace AmeisenBotRevamped
         public void ClearCaches()
         {
             WowDataAdapter.ClearCaches();
+        }
+
+        public void SetWindowPosition(Rect rect)
+        {
+            if (rect.Left > 0
+                && rect.Right > 0
+                && rect.Top > 0
+                && rect.Bottom > 0)
+            {
+                SafeNativeMethods.MoveWindow(
+                    Process.MainWindowHandle,
+                    rect.Left,
+                    rect.Top,
+                    rect.Right - rect.Left,
+                    rect.Bottom - rect.Top,
+                    true
+                );
+            }
+        }
+
+        public Rect GetWindowPosition()
+        {
+            Rect rect = new Rect();
+            SafeNativeMethods.GetWindowRect(Process.MainWindowHandle, ref rect);
+            return rect;
+        }
+
+        public override string ToString()
+        {
+            return $"{WowDataAdapter.AccountName}:{CharacterName} @{RealmName}";
         }
     }
 }

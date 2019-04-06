@@ -273,7 +273,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
             string name = ReadString(current + OffsetList.OffsetNameString, 12);
 
-            if (name != "")
+            if (name != "" && !PlayerNameCache.ContainsKey(guid))
                 PlayerNameCache.Add(guid, name);
 
             return name;
@@ -292,7 +292,8 @@ namespace AmeisenBotRevamped.DataAdapters
                 objName = ReadUInt(objName + 0x05C);
                 string name = ReadString(objName, 24);
 
-                UnitNameCache.Add(guid, name);
+                if (name != "" && !UnitNameCache.ContainsKey(guid))
+                    UnitNameCache.Add(guid, name);
                 return name;
             }
             catch { return "unknown"; }
@@ -376,13 +377,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
         private void CheckForGameCrashed()
         {
-            if (GameState == WowGameState.Crashed) return;
-
-            try
-            {
-                Process.GetProcessById(TrashMem.Process.Id);
-            }
-            catch
+            if (TrashMem.Process.HasExited || GameState == WowGameState.Crashed)
             {
                 IsWorldLoadedWatchdog.Stop();
                 GameState = WowGameState.Crashed;

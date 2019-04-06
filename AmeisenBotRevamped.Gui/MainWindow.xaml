@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmeisenBotRevamped.Gui"
         mc:Ignorable="d"
-        Title="AmeisenBot" Height="360" Width="724" ResizeMode="CanResizeWithGrip" WindowStyle="None" MouseLeftButtonDown="MainWindow_MouseLeftButtonDown" Background="#FF646464" BorderBrush="#FFB4B4B4" BorderThickness="2" AllowsTransparency="True" Loaded="MainWindow_Loaded" Closing="MainWindow_Closing" MinWidth="364" MinHeight="144">
+        Title="AmeisenBot" Height="400" Width="724" ResizeMode="CanResizeWithGrip" WindowStyle="None" MouseLeftButtonDown="MainWindow_MouseLeftButtonDown" Background="#FF646464" BorderBrush="#FFB4B4B4" BorderThickness="2" AllowsTransparency="True" Loaded="MainWindow_Loaded" Closing="MainWindow_Closing" MinWidth="364" MinHeight="144">
     <Grid>
-        <Button x:Name="buttonClose" Content="X" Margin="0,-2,-2,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" Click="ButtonClose_Click"/>
         <WrapPanel x:Name="mainWrappanel" Margin="0,20,0,0"/>
         <Rectangle Fill="#FFB4B4B4" Margin="0,18,-2,0" Height="2" VerticalAlignment="Top"/>
-        <Button x:Name="buttonMinimize" Content="_" Margin="0,-2,18,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" Click="ButtonMinimize_Click"/>
-        <Button x:Name="buttonSettings" Content="🛠" Margin="0,-2,38,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" FontSize="10" Click="ButtonSettings_Click"/>
-        <Button x:Name="buttonToggleFleet" Content="Fleet OFF" Margin="0,-2,58,0" VerticalAlignment="Top" Height="22" BorderBrush="#FFB4B4B4" Background="#FFFF9696" Click="ButtonToggleFleet_Click" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="buttonMinimize" Content="_" Margin="0,-2,20,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" Click="ButtonMinimize_Click"/>
+        <Button x:Name="buttonSettings" Content="🔧" Margin="0,-2,42,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" FontSize="10" Click="ButtonSettings_Click"/>
+        <Button x:Name="buttonToggleFleet" Content="Fleet OFF" Margin="-2,-2,0,0" VerticalAlignment="Top" Height="22" BorderBrush="#FFB4B4B4" Background="#FFFF9696" Click="ButtonToggleFleet_Click" HorizontalAlignment="Left" Width="75" Padding="1" UseLayoutRounding="False" BorderThickness="2"/>
+        <Button x:Name="buttonRefresh" Content="↻" Margin="0,-2,64,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" FontSize="10" Click="ButtonRefresh_Click" FontWeight="Bold"/>
+        <Button x:Name="buttonClose" Content="X" Margin="0,-2,-2,0" BorderThickness="2" Background="#FF828282" BorderBrush="#FFB4B4B4" Foreground="White" Height="22" VerticalAlignment="Top" HorizontalAlignment="Right" Width="22" Click="ButtonClose_Click"/>
     </Grid>
 </Window>

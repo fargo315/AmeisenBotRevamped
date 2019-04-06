@@ -65,6 +65,7 @@ namespace AmeisenBotRevamped.CharacterManager
                     {
                         InventoryItems.Add(ItemFactory.BuildSpecificItem(rawItem));
                     }
+                    AmeisenBotLogger.Instance.Log($"Total Items in Inventory: {InventoryItems.Count}", LogLevel.Error);
                 }
                 catch (Exception ex)
                 {
@@ -85,12 +86,17 @@ namespace AmeisenBotRevamped.CharacterManager
             CurrentEquipment.Clear();
             foreach (EquipmentSlot equipmentSlot in Enum.GetValues(typeof(EquipmentSlot)))
             {
+                if (equipmentSlot == EquipmentSlot.NOT_EQUIPABLE) continue;
+
                 try
                 {
                     string resultJson = ReadEquitmentSlot(equipmentSlot);
 
+                    if (resultJson == "noItem") continue;
+
                     RawItem rawItem = JsonConvert.DeserializeObject<RawItem>(resultJson);
                     CurrentEquipment.Add(equipmentSlot, ItemFactory.BuildSpecificItem(rawItem));
+                    AmeisenBotLogger.Instance.Log($"Parsed EquipmentItem: {equipmentSlot.ToString()} => {rawItem.name}", LogLevel.Error);
                 }
                 catch (Exception ex)
                 {

@@ -3,23 +3,24 @@ using System.Runtime.InteropServices;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
-    internal class SafeNativeMethods
+    public class SafeNativeMethods
     {
+        [StructLayout(LayoutKind.Sequential)]
         public struct Rect
         {
-            public int Bottom { get; set; }
-            public int Left { get; set; }
-            public int Right { get; set; }
-            public int Top { get; set; }
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
 
         [DllImport("user32.dll")]
-        internal static extern bool GetWindowRect(IntPtr hwnd, ref Rect rectangle);
+        public static extern bool GetWindowRect(IntPtr hwnd, ref Rect rectangle);
 
         [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         [DllImport("user32.dll")]
-        internal static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
     }
 }

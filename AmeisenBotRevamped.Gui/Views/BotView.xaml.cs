@@ -166,10 +166,10 @@ namespace AmeisenBotRevamped.Gui.Views
 
         private BitmapImage SearchForBotPicture()
         {
-            if (Directory.Exists(Settings.PictureFolder))
+            if (Directory.Exists(Settings.BotPictureFolder))
             {
-                string pngPath = $"{Settings.PictureFolder}/{AmeisenBot.CharacterName.ToLower()}.png";
-                string jpgPath = $"{Settings.PictureFolder}/{AmeisenBot.CharacterName.ToLower()}.jpg";
+                string pngPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower()}.png";
+                string jpgPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower()}.jpg";
 
                 if (File.Exists(pngPath))
                 {
