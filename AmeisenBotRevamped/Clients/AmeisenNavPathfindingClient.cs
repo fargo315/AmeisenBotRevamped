@@ -14,13 +14,13 @@ namespace AmeisenBotRevamped.Clients
 {
     public class AmeisenNavPathfindingClient : IPathfindingClient
     {
-        public IPAddress Ip { get; private set; }
-        public int Port { get; private set; }
-        public TcpClient TcpClient { get; private set; }
+        public IPAddress Ip { get; }
+        public int Port { get; }
+        public TcpClient TcpClient { get; }
         public bool IsConnected { get; private set; }
 
-        private Timer ConnectionWatchdog { get; set; }
-        private int ProcessId { get; set; }
+        private Timer ConnectionWatchdog { get; }
+        private int ProcessId { get; }
 
         public AmeisenNavPathfindingClient(string ip, int port, int processId)
         {
@@ -46,7 +46,7 @@ namespace AmeisenBotRevamped.Clients
                 catch { }
             }
 
-            if (TcpClient != null && TcpClient.Client != null)
+            if (TcpClient?.Client != null)
                 IsConnected = TcpClient.Connected;
         }
 

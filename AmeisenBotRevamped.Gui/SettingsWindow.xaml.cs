@@ -16,7 +16,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static AmeisenBotRevamped.ActionExecutors.SafeNativeMethods;
 
 namespace AmeisenBotRevamped.Gui
 {
@@ -25,8 +24,8 @@ namespace AmeisenBotRevamped.Gui
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        private List<AmeisenBot> AmeisenBots { get; set; }
-        public Settings Settings { get; private set; }
+        private List<AmeisenBot> AmeisenBots { get; }
+        public Settings Settings { get; }
         public Timer ViewUpdateTimer { get; private set; }
 
         public AmeisenBot SelectedBot => (AmeisenBot)listboxBots.SelectedItem;
@@ -52,6 +51,16 @@ namespace AmeisenBotRevamped.Gui
             labelWowExePath.Content = $"{Settings.WowExePath}";
             labelBotPictureFolder.Content = $"{Settings.BotPictureFolder}";
             labelBotFleetConfig.Content = $"{Settings.BotFleetConfig}";
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
 
         private void CUpdateViews(object sender, ElapsedEventArgs e)
@@ -90,11 +99,11 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonResetWindowPosition_Click(object sender, RoutedEventArgs e)
         {
-            AddOrReplaceRect(new ActionExecutors.SafeNativeMethods.Rect());
-            SelectedBot.SetWindowPosition(new ActionExecutors.SafeNativeMethods.Rect());
+            AddOrReplaceRect(new ActionExecutors.Structs.Rect());
+            SelectedBot.SetWindowPosition(new ActionExecutors.Structs.Rect());
         }
 
-        private void AddOrReplaceRect(ActionExecutors.SafeNativeMethods.Rect rect)
+        private void AddOrReplaceRect(ActionExecutors.Structs.Rect rect)
         {
             if (Settings.WowPositions.ContainsKey(SelectedBot.CharacterName))
                 Settings.WowPositions[SelectedBot.CharacterName] = rect;
@@ -109,7 +118,7 @@ namespace AmeisenBotRevamped.Gui
             if (Settings.WowPositions.ContainsKey(SelectedBot.CharacterName))
                 labelSavedWindowPosition.Content = $"{JsonConvert.SerializeObject(Settings.WowPositions[SelectedBot.CharacterName])}";
             else
-                labelSavedWindowPosition.Content = $"{JsonConvert.SerializeObject(new ActionExecutors.SafeNativeMethods.Rect())}";
+                labelSavedWindowPosition.Content = $"{JsonConvert.SerializeObject(new ActionExecutors.Structs.Rect())}";
         }
 
         private void ButtonWowExePath_Click(object sender, RoutedEventArgs e)

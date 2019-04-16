@@ -29,13 +29,13 @@ namespace AmeisenBotRevamped.Utils
                 catch { }
 
                 string name = trashMem.ReadString(offsetList.StaticPlayerName, Encoding.ASCII, 12);
-                if (name == "")
+                if (name.Length != 0)
                 {
                     name = "not logged in";
                 }
 
                 string realm = trashMem.ReadString(offsetList.StaticRealmName, Encoding.ASCII, 12);
-                if (realm == "")
+                if (realm.Length != 0)
                 {
                     if (name == "not logged in")
                     {

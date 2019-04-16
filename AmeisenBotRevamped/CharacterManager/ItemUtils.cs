@@ -5,7 +5,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 
 namespace AmeisenBotRevamped.CharacterManager
 {
-    public abstract class ItemUtils
+    public static class ItemUtils
     {
         public static bool IsItemUsefulForMe(WowPlayer wowPlayer, IItem item)
         {
@@ -14,14 +14,14 @@ namespace AmeisenBotRevamped.CharacterManager
                 return false;
             }
 
-            if (item is ArmorItem 
-                && IsArmorEquipableForCharacter(wowPlayer, (ArmorItem)item))
+            if (item is ArmorItem armorItem
+                && IsArmorEquipableForCharacter(wowPlayer, armorItem))
             {
                 return true;
             }
 
-            if (item is WeaponItem 
-                && IsWeaponEquipableForCharacter(wowPlayer, (WeaponItem)item))
+            if (item is WeaponItem weaponItem
+                && IsWeaponEquipableForCharacter(wowPlayer, weaponItem))
             {
                 return true;
             }

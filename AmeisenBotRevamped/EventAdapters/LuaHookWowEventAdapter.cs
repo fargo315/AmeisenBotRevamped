@@ -13,10 +13,10 @@ namespace AmeisenBotRevamped.EventAdapters
     {
         public delegate void OnEventFired(long timestamp, List<string> args);
 
-        public Dictionary<string, OnEventFired> EventDictionary { get; private set; }
+        public Dictionary<string, OnEventFired> EventDictionary { get; }
 
-        private Timer EventReaderTimer { get; set; }
-        private IWowActionExecutor WowActionExecutor { get; set; }
+        private Timer EventReaderTimer { get; }
+        private IWowActionExecutor WowActionExecutor { get; }
 
         private bool IsSetUp { get; set; }
 
@@ -94,18 +94,24 @@ namespace AmeisenBotRevamped.EventAdapters
                 }
                 catch (Exception ex)
                 {
-                    AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
+                    AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex}");
                 }
             }
             catch (Exception ex)
             {
-                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex}");
             }
         }
 
         ~LuaHookWowEventAdapter()
         {
             Stop();
+
+            EventReaderTimer.Close();
+            EventReaderTimer.Dispose();
+
+            GC.SuppressFinalize(this);
+            GC.Collect();
         }
 
         private void SetupEventHook()

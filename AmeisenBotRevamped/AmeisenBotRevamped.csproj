@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -63,6 +65,7 @@
     <Compile Include="ActionExecutors\IWowActionExecutor.cs" />
     <Compile Include="ActionExecutors\MemoryWowActionExecutor.cs" />
     <Compile Include="ActionExecutors\SafeNativeMethods.cs" />
+    <Compile Include="ActionExecutors\Structs\Rect.cs" />
     <Compile Include="ActionExecutors\TestWowActionExecutor.cs" />
     <Compile Include="AI\CombatEngine\BasicCombatEngine.cs" />
     <Compile Include="AI\CombatEngine\ICombatEngine.cs" />

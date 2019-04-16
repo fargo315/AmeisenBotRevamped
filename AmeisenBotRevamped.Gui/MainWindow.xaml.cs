@@ -11,18 +11,18 @@ using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.OffsetLists;
 using AmeisenBotRevamped.Utils;
-using TrashMemCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Threading;
+using TrashMemCore;
 
 namespace AmeisenBotRevamped.Gui
 {
@@ -34,14 +34,14 @@ namespace AmeisenBotRevamped.Gui
         private List<AmeisenBot> AmeisenBots { get; set; }
         private List<BotView> BotViews { get; set; }
 
-        private System.Timers.Timer ViewUpdateTimer { get; set; }
-        private System.Timers.Timer BotFleetTimer { get; set; }
+        private System.Timers.Timer ViewUpdateTimer { get; }
+        private System.Timers.Timer BotFleetTimer { get; }
 
         private Settings Settings { get; set; }
 
-        private Dictionary<string, bool> WowStartupMap { get; set; }
+        private Dictionary<string, bool> WowStartupMap { get; }
 
-        private IOffsetList OffsetList { get; set; }
+        private IOffsetList OffsetList { get; }
 
         private string SettingsPath => AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
@@ -113,15 +113,15 @@ namespace AmeisenBotRevamped.Gui
             if (BotFleetTimer.Enabled)
             {
                 AmeisenBotLogger.Instance.Log($"FleetMode disabled");
-                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFF9696"));
-                buttonToggleFleet.Content = "Fleet OFF";
+                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF171717"));
+                buttonToggleFleet.Content = "Fleet-Mode OFF";
                 BotFleetTimer.Stop();
             }
             else
             {
                 AmeisenBotLogger.Instance.Log($"FleetMode enabled");
-                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB4FF96"));
-                buttonToggleFleet.Content = "Fleet ON";
+                buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF0078FF"));
+                buttonToggleFleet.Content = "Fleet-Mode ON";
                 BotFleetTimer.Start();
             }
         }
@@ -145,7 +145,6 @@ namespace AmeisenBotRevamped.Gui
             catch { }
         }
         #endregion
-
 
         private void LoadSettings()
         {
@@ -213,7 +212,6 @@ namespace AmeisenBotRevamped.Gui
             catch { }
         }
 
-
         private AmeisenBot SetupAmeisenBot(Process wowProcess)
         {
             AmeisenBotLogger.Instance.Log($"[{wowProcess.Id.ToString("X")}]\tSetting up the AmeisenBot...");
@@ -257,7 +255,6 @@ namespace AmeisenBotRevamped.Gui
             }
         }
 
-
         private void CheckForBotFleet()
         {
             if (BotFleetAccounts.Count > 0)
@@ -274,7 +271,7 @@ namespace AmeisenBotRevamped.Gui
                         && !WowStartupMap[wowAccount.CharacterName])
                     {
                         List<AmeisenBot> avaiableBots = AmeisenBots.Where(
-                            bot => bot.CharacterName == ""
+                            bot => bot.CharacterName.Length != 0
                             && !bot.AutologinProvider.LoginInProgress
                             && bot.WowDataAdapter.GameState != WowGameState.Crashed
                         ).ToList();
@@ -283,7 +280,7 @@ namespace AmeisenBotRevamped.Gui
 
                         if (avaiableBots.Count < 1)
                         {
-                            if (Settings.WowExePath != "" && File.Exists(Settings.WowExePath))
+                            if (Settings.WowExePath.Length != 0 && File.Exists(Settings.WowExePath))
                             {
                                 WowStartupMap[wowAccount.CharacterName] = true;
 
@@ -294,7 +291,10 @@ namespace AmeisenBotRevamped.Gui
                                 ameisenBot = SetupAmeisenBot(newWowProcess);
 
                                 if (Settings.WowPositions.ContainsKey(wowAccount.CharacterName))
+                                {
                                     ameisenBot.SetWindowPosition(Settings.WowPositions[wowAccount.CharacterName]);
+                                }
+
                                 Thread.Sleep(200);
 
                                 AmeisenBots.Add(ameisenBot);
@@ -306,7 +306,7 @@ namespace AmeisenBotRevamped.Gui
                         }
                         else
                         {
-                            ameisenBot = avaiableBots.First();
+                            ameisenBot = avaiableBots[0];
                         }
 
                         if (ameisenBot == null)
@@ -340,7 +340,7 @@ namespace AmeisenBotRevamped.Gui
         {
             AmeisenBotLogger.Instance.Log($"Reading FleetConfig from \"{Settings.BotFleetConfig}\"");
 
-            if (Settings.BotFleetConfig != "" && File.Exists(Settings.BotFleetConfig))
+            if (Settings.BotFleetConfig.Length != 0 && File.Exists(Settings.BotFleetConfig))
             {
                 return JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotFleetConfig));
             }
@@ -349,7 +349,6 @@ namespace AmeisenBotRevamped.Gui
                 return new List<WowAccount>();
             }
         }
-
 
         private bool LoginForCharacterIsInProgress(string characterName)
         {

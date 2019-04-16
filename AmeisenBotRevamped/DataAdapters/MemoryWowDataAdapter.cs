@@ -58,15 +58,15 @@ namespace AmeisenBotRevamped.DataAdapters
         #region Internal Properties
         // You may not need them but who knows
 
-        public IOffsetList OffsetList { get; private set; }
-        public TrashMem TrashMem { get; private set; }
+        public IOffsetList OffsetList { get; }
+        public TrashMem TrashMem { get; }
         #endregion
 
         #region External Properties
         // Interesting stuff
 
         public BasicInfoDataSet BasicInfoDataSet { get; private set; }
-        public WowObjectManager ObjectManager { get; private set; }
+        public WowObjectManager ObjectManager { get; }
 
         public List<ulong> PartymemberGuids => ReadPartymemberGuids();
         public ulong PartyleaderGuid => ReadPartyLeaderGuid();
@@ -273,7 +273,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
             string name = ReadString(current + OffsetList.OffsetNameString, 12);
 
-            if (name != "" && !PlayerNameCache.ContainsKey(guid))
+            if (name.Length != 0 && !PlayerNameCache.ContainsKey(guid))
                 PlayerNameCache.Add(guid, name);
 
             return name;
@@ -292,7 +292,7 @@ namespace AmeisenBotRevamped.DataAdapters
                 objName = ReadUInt(objName + 0x05C);
                 string name = ReadString(objName, 24);
 
-                if (name != "" && !UnitNameCache.ContainsKey(guid))
+                if (name.Length != 0 && !UnitNameCache.ContainsKey(guid))
                     UnitNameCache.Add(guid, name);
                 return name;
             }
