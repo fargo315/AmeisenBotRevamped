@@ -48,5 +48,20 @@ namespace AmeisenBotRevamped.ObjectManager
                 default: return wowObject;
             }
         }
+
+        public T UpdateObject<T>(T objectToUpdate) where T : WowObject
+        {
+            switch (objectToUpdate.Type)
+            {
+                case WowObjectType.Unit:
+                    return (T)(object)WowDataAdapter.ReadWowUnit(objectToUpdate.BaseAddress);
+
+                case WowObjectType.Player:
+                    return (T)(object)WowDataAdapter.ReadWowPlayer(objectToUpdate.BaseAddress);
+
+                default:
+                    return (T)(object)WowDataAdapter.ReadWowObject(objectToUpdate.BaseAddress);
+            }
+        }
     }
 }

@@ -56,18 +56,19 @@ namespace AmeisenBotRevamped.AI.CombatEngine
                 WowActionExecutor.TargetGuid(ActiveTarget.Guid);
             }
 
-            WowActionExecutor.SendChatMessage("/startattack");
+            //WowActionExecutor.SendChatMessage("/startattack");
+            WowActionExecutor.AttackUnit(ActiveTarget);
 
             Spell spellToCast = SpellStrategy?.GetSpellToCast(player, ActiveTarget);
 
-            if (CastSpell(spellToCast))
+            /*if (CastSpell(spellToCast))
             {
                 AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCast successful [{spellToCast?.name}]");
             }
             else
             {
                 AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCast not successful [{spellToCast?.name}]");
-            }
+            }*/
         }
 
         public void Start()

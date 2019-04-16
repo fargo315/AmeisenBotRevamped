@@ -1,5 +1,6 @@
 ﻿using AmeisenBotRevamped.DataAdapters.DataSets;
 using AmeisenBotRevamped.ObjectManager;
+using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using System.Collections.Generic;
@@ -38,7 +39,9 @@ namespace AmeisenBotRevamped.DataAdapters
         void StartObjectUpdates();
         void StopObjectUpdates();
 
-        void ClearCaches();
+        WowObject ReadWowObject(uint activeObject, WowObjectType wowObjectType = WowObjectType.None);
+        WowUnit ReadWowUnit(uint activeObject, WowObjectType wowObjectType = WowObjectType.Unit);
+        WowPlayer ReadWowPlayer(uint activeObject, WowObjectType wowObjectType = WowObjectType.Player);
 
         WowPosition GetPosition(uint baseAddress);
     }

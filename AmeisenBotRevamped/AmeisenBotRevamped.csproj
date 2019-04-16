@@ -140,6 +140,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\BotMath.cs" />
     <Compile Include="Utils\BotUtils.cs" />
+    <Compile Include="Utils\SharedCacheManager.cs" />
     <Compile Include="Utils\WowProcess.cs" />
   </ItemGroup>
   <ItemGroup>

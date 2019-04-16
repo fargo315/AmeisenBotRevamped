@@ -162,14 +162,24 @@ namespace AmeisenBotRevamped.DataAdapters
 
         }
 
-        public void ClearCaches()
-        {
-
-        }
-
         public WowPosition GetPosition(uint baseAddress)
         {
             return new WowPosition();
+        }
+
+        public WowObject ReadWowObject(uint activeObject, WowObjectType wowObjectType = WowObjectType.None)
+        {
+            return null;
+        }
+
+        public WowUnit ReadWowUnit(uint activeObject, WowObjectType wowObjectType = WowObjectType.Unit)
+        {
+            return null;
+        }
+
+        public WowPlayer ReadWowPlayer(uint activeObject, WowObjectType wowObjectType = WowObjectType.Player)
+        {
+            return null;
         }
     }
 }

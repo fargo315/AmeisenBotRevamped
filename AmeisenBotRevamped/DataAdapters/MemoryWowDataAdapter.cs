@@ -11,6 +11,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Timers;
 using System.Text;
+using AmeisenBotRevamped.Utils;
 
 namespace AmeisenBotRevamped.DataAdapters
 {
@@ -52,7 +53,8 @@ namespace AmeisenBotRevamped.DataAdapters
         public string LastErrorMessage => ReadString(OffsetList.StaticErrorMessage, 64);
         public string AccountName => ReadString(OffsetList.StaticAccountName, 16);
 
-        public WowPosition ActivePlayerPosition => ReadObject<WowPosition>(ReadUInt(OffsetList.StaticPlayerBase) + OffsetList.OffsetWowUnitPosition);
+        private uint PlayerBase { get; set; }
+        public WowPosition ActivePlayerPosition => PlayerBase != 0x0 ? ReadObject<WowPosition>(PlayerBase + OffsetList.OffsetWowUnitPosition) : new WowPosition();
         #endregion
 
         #region Internal Properties
@@ -73,17 +75,10 @@ namespace AmeisenBotRevamped.DataAdapters
         public OnGamestateChanged OnGamestateChanged { get; set; }
         public bool ObjectUpdatesEnabled => ActiveWowObjectsWatchdog.Enabled;
         #endregion
-
-        #region Caches
-        private Dictionary<ulong, string> PlayerNameCache { get; set; }
-        private Dictionary<ulong, string> UnitNameCache { get; set; }
-        #endregion
-
+        
         public MemoryWowDataAdapter(TrashMem trashMem, IOffsetList offsetList)
         {
             LastIsWorldLoaded = false;
-            PlayerNameCache = new Dictionary<ulong, string>();
-            UnitNameCache = new Dictionary<ulong, string>();
 
             WowObjectList = new List<WowObject>();
             TrashMem = trashMem;
@@ -175,15 +170,15 @@ namespace AmeisenBotRevamped.DataAdapters
             }
         }
 
-        private WowObject ReadWowObject(uint activeObject, WowObjectType wowObjectType) => new WowObject()
+        public WowObject ReadWowObject(uint activeObject, WowObjectType wowObjectType = WowObjectType.None) => new WowObject()
         {
             BaseAddress = activeObject,
             DescriptorAddress = ReadUInt(activeObject + OffsetList.OffsetWowObjectDescriptor),
             Guid = ReadUInt64(activeObject + OffsetList.OffsetWowObjectGuid),
-            Type = wowObjectType
+            Type = WowObjectType.Gameobject
         };
 
-        private WowUnit ReadWowUnit(uint activeObject, WowObjectType wowObjectType)
+        public WowUnit ReadWowUnit(uint activeObject, WowObjectType wowObjectType = WowObjectType.Unit)
         {
             WowObject wowObject = ReadWowObject(activeObject, wowObjectType);
             return new WowUnit()
@@ -208,7 +203,7 @@ namespace AmeisenBotRevamped.DataAdapters
             };
         }
 
-        private WowPlayer ReadWowPlayer(uint activeObject, WowObjectType wowObjectType)
+        public WowPlayer ReadWowPlayer(uint activeObject, WowObjectType wowObjectType = WowObjectType.Player)
         {
             WowUnit wowUnit = ReadWowUnit(activeObject, wowObjectType);
             WowPlayer player = new WowPlayer()
@@ -238,6 +233,7 @@ namespace AmeisenBotRevamped.DataAdapters
                 player.MaxExp = ReadInt(wowUnit.DescriptorAddress + OffsetList.DescriptorOffsetMaxExp);
                 player.Race = (WowRace)ReadByte(OffsetList.StaticRace);
                 player.Class = (WowClass)ReadByte(OffsetList.StaticClass);
+                PlayerBase = activeObject;
             }
 
             return player;
@@ -245,9 +241,9 @@ namespace AmeisenBotRevamped.DataAdapters
 
         private string ReadPlayerName(ulong guid)
         {
-            if (PlayerNameCache.ContainsKey(guid))
+            if (SharedCacheManager.Instance.PlayerNameCache.ContainsKey(guid))
             {
-                return PlayerNameCache[guid];
+                return SharedCacheManager.Instance.PlayerNameCache[guid];
             }
 
             uint playerMask, playerBase, shortGUID, testGUID, offset, current;
@@ -273,17 +269,17 @@ namespace AmeisenBotRevamped.DataAdapters
 
             string name = ReadString(current + OffsetList.OffsetNameString, 12);
 
-            if (name != "" && !PlayerNameCache.ContainsKey(guid))
-                PlayerNameCache.Add(guid, name);
+            if (name != "" && !SharedCacheManager.Instance.PlayerNameCache.ContainsKey(guid))
+                SharedCacheManager.Instance.PlayerNameCache.Add(guid, name);
 
             return name;
         }
 
         private string ReadUnitName(uint activeObject, ulong guid)
         {
-            if (UnitNameCache.ContainsKey(guid))
+            if (SharedCacheManager.Instance.UnitNameCache.ContainsKey(guid))
             {
-                return UnitNameCache[guid];
+                return SharedCacheManager.Instance.UnitNameCache[guid];
             }
 
             try
@@ -292,8 +288,8 @@ namespace AmeisenBotRevamped.DataAdapters
                 objName = ReadUInt(objName + 0x05C);
                 string name = ReadString(objName, 24);
 
-                if (name != "" && !UnitNameCache.ContainsKey(guid))
-                    UnitNameCache.Add(guid, name);
+                if (name != "" && !SharedCacheManager.Instance.UnitNameCache.ContainsKey(guid))
+                    SharedCacheManager.Instance.UnitNameCache.Add(guid, name);
                 return name;
             }
             catch { return "unknown"; }
@@ -387,15 +383,6 @@ namespace AmeisenBotRevamped.DataAdapters
 
         public void StartObjectUpdates() => ActiveWowObjectsWatchdog.Start();
         public void StopObjectUpdates() => ActiveWowObjectsWatchdog.Stop();
-
-        public void ClearCaches()
-        {
-            PlayerNameCache = new Dictionary<ulong, string>();
-            UnitNameCache = new Dictionary<ulong, string>();
-
-            EnableAutoloot();
-            EnableClickToMove();
-        }
 
         private ulong ReadUInt64(uint offset)
         {

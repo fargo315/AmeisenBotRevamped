@@ -32,7 +32,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         }
 
-        public void AttackTarget()
+        public void AttackUnit(WowUnit unit)
         {
 
         }

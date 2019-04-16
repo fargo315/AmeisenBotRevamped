@@ -43,7 +43,7 @@ namespace AmeisenBotRevamped.Gui
 
         private IOffsetList OffsetList { get; set; }
 
-        private string SettingsPath => AppDomain.CurrentDomain.BaseDirectory + "config.json";
+        private static string SettingsPath = AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
         public List<WowAccount> BotFleetAccounts { get; private set; }
 
@@ -135,14 +135,10 @@ namespace AmeisenBotRevamped.Gui
 
         private void CUpdateViews(object sender, ElapsedEventArgs e)
         {
-            try
+            foreach (BotView botView in BotViews)
             {
-                foreach (BotView botView in BotViews)
-                {
-                    Dispatcher.Invoke(() => botView.UpdateView());
-                }
+                Dispatcher.Invoke(() => botView.UpdateView());
             }
-            catch { }
         }
         #endregion
 
@@ -185,32 +181,28 @@ namespace AmeisenBotRevamped.Gui
             mainWrappanel.Children.Clear();
             BotViews = new List<BotView>();
 
-            try
+            foreach (AmeisenBot ameisenBot in AmeisenBots)
             {
-                foreach (AmeisenBot ameisenBot in AmeisenBots)
+                if (ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed || ameisenBot.Process.HasExited)
                 {
-                    if (ameisenBot.WowDataAdapter.GameState == WowGameState.Crashed || ameisenBot.Process.HasExited)
-                    {
-                        AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tRemoving crashed AmeisenBot...");
+                    AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tRemoving crashed AmeisenBot...");
 
-                        ameisenBot.Detach();
-                        GC.Collect();
+                    ameisenBot.Detach();
+                    GC.Collect();
 
-                        WowStartupMap[ameisenBot.CharacterName] = false;
-                        AmeisenBots.Remove(ameisenBot);
-                        break;
-                    }
+                    WowStartupMap[ameisenBot.CharacterName] = false;
+                    AmeisenBots.Remove(ameisenBot);
+                    break;
+                }
 
-                    AddBotToView(ameisenBot);
+                AddBotToView(ameisenBot);
 
-                    if (autoAttach && !ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
-                    {
-                        // Causing random crashes, don't know why
-                        //AttachBot(ameisenBot);
-                    }
+                if (autoAttach && !ameisenBot.Attached && BotFleetAccounts.Where(acc => acc.CharacterName == ameisenBot.CharacterName).ToList().Count > 0)
+                {
+                    // Causing random crashes, don't know why
+                    //AttachBot(ameisenBot);
                 }
             }
-            catch { }
         }
 
 
@@ -274,7 +266,7 @@ namespace AmeisenBotRevamped.Gui
                         && !WowStartupMap[wowAccount.CharacterName])
                     {
                         List<AmeisenBot> avaiableBots = AmeisenBots.Where(
-                            bot => bot.CharacterName == ""
+                            bot => bot.CharacterName.Length == 0
                             && !bot.AutologinProvider.LoginInProgress
                             && bot.WowDataAdapter.GameState != WowGameState.Crashed
                         ).ToList();
@@ -283,7 +275,7 @@ namespace AmeisenBotRevamped.Gui
 
                         if (avaiableBots.Count < 1)
                         {
-                            if (Settings.WowExePath != "" && File.Exists(Settings.WowExePath))
+                            if (Settings.WowExePath.Length != 0 && File.Exists(Settings.WowExePath))
                             {
                                 WowStartupMap[wowAccount.CharacterName] = true;
 
@@ -316,31 +308,23 @@ namespace AmeisenBotRevamped.Gui
 
                         AmeisenBotLogger.Instance.Log($"[{ameisenBot.Process.Id.ToString("X")}]\tLoggin into account \"{wowAccount.Username}\"");
                         ameisenBot.AutologinProvider.DoLogin(ameisenBot.Process, wowAccount, OffsetList);
-                        ameisenBot.ClearCaches();
 
-                        try
-                        {
-                            Dispatcher.Invoke(() => AddBotToView(ameisenBot));
-                        }
-                        catch { }
+                        Dispatcher.Invoke(() => AddBotToView(ameisenBot));
 
                         WowStartupMap[ameisenBot.CharacterName] = false;
                     }
                 }
             }
 
-            try
-            {
-                Dispatcher.Invoke(() => RefreshActiveWows(true));
-            }
-            catch { }
+            Dispatcher.Invoke(() => RefreshActiveWows(true));
         }
 
         private List<WowAccount> ReadBotFleetAccounts()
         {
             AmeisenBotLogger.Instance.Log($"Reading FleetConfig from \"{Settings.BotFleetConfig}\"");
 
-            if (Settings.BotFleetConfig != "" && File.Exists(Settings.BotFleetConfig))
+            if (Settings.BotFleetConfig.Length != 0
+                && File.Exists(Settings.BotFleetConfig))
             {
                 return JsonConvert.DeserializeObject<List<WowAccount>>(File.ReadAllText(Settings.BotFleetConfig));
             }

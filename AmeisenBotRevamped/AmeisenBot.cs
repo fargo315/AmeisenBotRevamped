@@ -147,6 +147,7 @@ namespace AmeisenBotRevamped
             WowActionExecutor?.Stop();
             WowPathfindingClient?.Disconnect();
             WowDataAdapter?.StopObjectUpdates();
+            Attached = false;
         }
 
         private void COnGamestateChanged(bool IsWorldLoaded, WowGameState gameState)
@@ -179,11 +180,6 @@ namespace AmeisenBotRevamped
                 if (StateMachine != null && !StateMachine.Enabled) { StateMachine.Start(); }
                 if (WowEventAdapter != null && !WowEventAdapter.Enabled) { WowEventAdapter.Start(); }
             }
-        }
-
-        public void ClearCaches()
-        {
-            WowDataAdapter.ClearCaches();
         }
 
         public void SetWindowPosition(Rect rect)

@@ -22,7 +22,7 @@ namespace AmeisenBotRevamped.ActionExecutors
         void FaceUnit(WowPlayer player, WowPosition positionToFace);
         void SendKey(IntPtr vKey, int minDelay = 20, int maxDelay = 40);
         void TargetGuid(ulong guid);
-        void AttackTarget();
+        void AttackUnit(WowUnit unit);
         void CastSpell(string name, bool castOnSelf = false);
 
         void LuaDoString(string command);

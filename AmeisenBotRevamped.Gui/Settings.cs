@@ -16,7 +16,7 @@ namespace AmeisenBotRevamped.Gui
         public string BotFleetConfig { get; set; }
         public string BotPictureFolder { get; set; }
 
-        public Dictionary<string, Rect> WowPositions { get; set; }
+        public Dictionary<string, Rect> WowPositions { get; private set; }
 
         public Settings()
         {

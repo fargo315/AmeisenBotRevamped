@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using TrashMemCore.Objects;
 using Fasm;
+using System.Collections.Specialized;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
@@ -41,13 +42,10 @@ namespace AmeisenBotRevamped.ActionExecutors
         public MemoryAllocation CodecaveForCheck { get; private set; }
         public MemoryAllocation CodecaveForExecution { get; private set; }
         public bool IsInjectionUsed { get; private set; }
-
-        public Dictionary<(int, int), UnitReaction> ReactionCache { get; private set; }
         #endregion
 
         public MemoryWowActionExecutor(TrashMem trashMem, IOffsetList offsetList)
         {
-            ReactionCache = new Dictionary<(int, int), UnitReaction>();
             OriginalEndsceneBytes = offsetList.EndSceneBytes;
             TrashMem = trashMem;
             OffsetList = offsetList;
@@ -56,8 +54,11 @@ namespace AmeisenBotRevamped.ActionExecutors
             SetupEndsceneHook();
         }
 
-        public void AttackTarget()
-            => LuaDoString($"AttackTarget();");
+        public void AttackUnit(WowUnit unit)
+        {
+            TrashMem.Write(OffsetList.StaticClickToMoveGuid, unit.Guid);
+            MoveToPosition(unit.Position, ClickToMoveType.AttackGuid);
+        }
 
         public void CastSpell(int spellId)
             => LuaDoString($"CastSpell({spellId});");
@@ -445,18 +446,12 @@ namespace AmeisenBotRevamped.ActionExecutors
         public UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB)
         {
             AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tGetting relation of: {wowUnitA.Name} to {wowUnitB.Name}", LogLevel.Verbose);
-                                   UnitReaction reaction = UnitReaction.Unknown;
+            UnitReaction reaction = UnitReaction.Unknown;
 
-            if (wowUnitA.IsDead || wowUnitB.IsDead)
+            if (SharedCacheManager.Instance.ReactionCache.ContainsKey((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)))
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCan't get relation, {(wowUnitA.IsDead ? "UnitA is dead..." : "UnitB is dead...")}", LogLevel.Verbose);
-                return reaction;
-            }
-
-            if (ReactionCache.ContainsKey((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)))
-            {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCached relation of: {wowUnitA.Name} to {wowUnitB.Name} is {ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)].ToString()}", LogLevel.Verbose);
-                return ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)];
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCached relation of: {wowUnitA.Name} to {wowUnitB.Name} is {SharedCacheManager.Instance.ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)].ToString()}", LogLevel.Verbose);
+                return SharedCacheManager.Instance.ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)];
             }
 
             // integer to save the reaction
@@ -478,6 +473,15 @@ namespace AmeisenBotRevamped.ActionExecutors
                 return UnitReaction.Unknown;
             }*/
 
+            // we need this, to be very accurate, otherwise wow will crash
+            wowUnitA.UnitFlags = TrashMem.ReadStruct<BitVector32>(wowUnitA.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags);
+            wowUnitB.UnitFlags = TrashMem.ReadStruct<BitVector32>(wowUnitB.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags);
+            if (wowUnitA.IsDead || wowUnitB.IsDead)
+            {
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCan't get relation, {(wowUnitA.IsDead ? "UnitA is dead..." : "UnitB is dead...")}", LogLevel.Verbose);
+                return reaction;
+            }
+
             try
             {
 
@@ -486,7 +490,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 //reaction = (UnitReaction)BitConverter.ToInt32(reactionBytes, 0);
 
-                ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
+                SharedCacheManager.Instance.ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
             }
             catch
             {

@@ -5,6 +5,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -64,7 +65,7 @@ namespace AmeisenBotRevamped.Gui.Views
             ulong targetGuid = AmeisenBot.WowDataAdapter.TargetGuid;
             WowUnit target = (WowUnit)AmeisenBot.ObjectManager.GetWowObjectByGuid(targetGuid);
 
-            if (AmeisenBot.CharacterName == "")
+            if (AmeisenBot.CharacterName.Length == 0)
                 labelBotname.Content = "Not logged in";
             else
                 labelBotname.Content = AmeisenBot.CharacterName;
@@ -168,8 +169,8 @@ namespace AmeisenBotRevamped.Gui.Views
         {
             if (Directory.Exists(Settings.BotPictureFolder))
             {
-                string pngPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower()}.png";
-                string jpgPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower()}.jpg";
+                string pngPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower(CultureInfo.CurrentCulture)}.png";
+                string jpgPath = $"{Settings.BotPictureFolder}/{AmeisenBot.CharacterName.ToLower(CultureInfo.CurrentCulture)}.jpg";
 
                 if (File.Exists(pngPath))
                 {
@@ -187,6 +188,7 @@ namespace AmeisenBotRevamped.Gui.Views
         private void ButtonAttach_Click(object sender, RoutedEventArgs e)
         {
             AttachBotFunc?.Invoke(AmeisenBot);
+            UpdateView();
         }
     }
 }

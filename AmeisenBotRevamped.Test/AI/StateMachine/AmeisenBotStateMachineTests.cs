@@ -28,7 +28,6 @@ namespace AmeisenBotRevamped.AI.StateMachine.Tests
 
             Assert.AreEqual("You suck", wowDataAdapter.LastErrorMessage);
 
-            wowDataAdapter.ClearCaches();
             wowDataAdapter.StartObjectUpdates();
             wowDataAdapter.StopObjectUpdates();
         }

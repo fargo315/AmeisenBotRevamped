@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text;
+using AmeisenBotRevamped.ActionExecutors;
 
 namespace AmeisenBotRevamped.Autologin
 {
@@ -16,12 +17,6 @@ namespace AmeisenBotRevamped.Autologin
         public const uint KEYDOWN = 0x100;
         public const uint KEYUP = 0x101;
         public const uint WM_CHAR = 0x0102;
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         private IOffsetList OffsetList { get; set; }
 
@@ -125,9 +120,9 @@ namespace AmeisenBotRevamped.Autologin
         {
             IntPtr windowHandle = process.MainWindowHandle;
 
-            SendMessage(windowHandle, KEYDOWN, new IntPtr(c), new IntPtr(0));
+            SafeNativeMethods.SendMessage(windowHandle, KEYDOWN, new IntPtr(c), new IntPtr(0));
             Thread.Sleep(new Random().Next(20, 40));
-            SendMessage(windowHandle, KEYUP, new IntPtr(c), new IntPtr(0));
+            SafeNativeMethods.SendMessage(windowHandle, KEYUP, new IntPtr(c), new IntPtr(0));
         }
 
         private static void SendKeyToProcess(Process process, int c, bool shift)
@@ -136,14 +131,14 @@ namespace AmeisenBotRevamped.Autologin
 
             if (shift)
             {
-                PostMessage(windowHandle, KEYDOWN, new IntPtr(0x10), new IntPtr(0));
+                SafeNativeMethods.PostMessage(windowHandle, KEYDOWN, new IntPtr(0x10), new IntPtr(0));
             }
 
-            PostMessage(windowHandle, WM_CHAR, new IntPtr(c), new IntPtr(0));
+            SafeNativeMethods.PostMessage(windowHandle, WM_CHAR, new IntPtr(c), new IntPtr(0));
 
             if (shift)
             {
-                PostMessage(windowHandle, KEYUP, new IntPtr(0x10), new IntPtr(0));
+                SafeNativeMethods.PostMessage(windowHandle, KEYUP, new IntPtr(0x10), new IntPtr(0));
             }
         }
     }

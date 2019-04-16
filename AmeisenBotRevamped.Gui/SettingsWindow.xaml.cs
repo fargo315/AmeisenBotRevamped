@@ -56,11 +56,7 @@ namespace AmeisenBotRevamped.Gui
 
         private void CUpdateViews(object sender, ElapsedEventArgs e)
         {
-            try
-            {
-                Dispatcher.Invoke(() => UpdateBotView());
-            }
-            catch { }
+            Dispatcher.Invoke(() => UpdateBotView());
         }
 
         private void UpdateBotView()
