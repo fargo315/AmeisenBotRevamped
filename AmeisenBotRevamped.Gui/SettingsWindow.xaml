@@ -5,39 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmeisenBotRevamped.Gui"
         mc:Ignorable="d"
-        Title="SettingsWindow" Height="450" Width="800" Background="#FF646464" Loaded="Window_Loaded">
+        Title="SettingsWindow" Height="420" Width="790" Background="#FF3C3C3C" ResizeMode="NoResize" WindowStyle="None" BorderThickness="0" AllowsTransparency="True" Loaded="Window_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown" >
     <Grid>
-        <GroupBox Header="Global Settings" Height="132" Margin="8,8,12.333,0" VerticalAlignment="Top" BorderBrush="#FFFFC34A" Foreground="White">
-            <Grid Margin="0,0,-1.667,-4.333">
-                <Label x:Name="labelWowExePathDesc" Content="Wow.exe Path:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White"/>
-                <Label x:Name="labelBotPictureFolderDesc" Content="Bot Picture Folder:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,18,0,0"/>
-                <Label x:Name="labelBotFleetConfigDesc" Content="Bot Fleet Config:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,36,0,0"/>
-                <Label x:Name="labelWowExePath" Content="C:/Wow/Wow.exe" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="208,1,0,0" FontStyle="Italic"/>
-                <Label x:Name="labelBotPictureFolder" Content="C:/BotPictures/" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="208,19,0,0" FontStyle="Italic"/>
-                <Label x:Name="labelBotFleetConfig" Content="C:/AmeisenBotRevamped/Bots.json" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="208,37,0,0" FontStyle="Italic"/>
-                <Button x:Name="buttonBotFleetConfig" Content=" 📁Open" HorizontalAlignment="Left" Margin="128,43,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonBotFleetConfig_Click"/>
-                <Button x:Name="buttonBotPictureFolder" Content=" 📁Open" HorizontalAlignment="Left" Margin="128,25,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonBotPictureFolder_Click"/>
-                <Button x:Name="buttonWowExePath" Content=" 📁Open" HorizontalAlignment="Left" Margin="128,7,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonWowExePath_Click"/>
-                <Label x:Name="labelBotFleetConfigDesc_Copy" Content="Navmesh Server IP:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,62,0,0"/>
-                <Label x:Name="labelBotFleetConfigDesc_Copy1" Content="Navmesh Server Port:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,80,0,0"/>
-                <TextBox x:Name="textboxNavmeshServerPort" HorizontalAlignment="Left" Height="19" Margin="128,86,0,0" TextWrapping="Wrap" Text="47110" VerticalAlignment="Top" Width="120" Background="{x:Null}" Foreground="White" BorderBrush="White" TextChanged="TextboxNavmeshServerPort_TextChanged" Loaded="TextboxNavmeshServerPort_Loaded"/>
-                <TextBox x:Name="textboxNavmeshServerIp" HorizontalAlignment="Left" Height="19" Margin="128,66,0,0" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="120" Background="{x:Null}" Foreground="White" BorderBrush="White" TextChanged="TextboxNavmeshServerIp_TextChanged" Loaded="TextboxNavmeshServerIp_Loaded"/>
-                <Label x:Name="labelNavmeshServerIpCheck" Content="✔️/ ❌" HorizontalAlignment="Left" Margin="248,62,0,0" VerticalAlignment="Top"/>
-                <Label x:Name="labelNavmeshServerPortCheck" Content="✔️/ ❌" HorizontalAlignment="Left" Margin="248,82,0,0" VerticalAlignment="Top"/>
-            </Grid>
-        </GroupBox>
-        <GroupBox Header="Bot Settings" HorizontalAlignment="Right" Margin="0,145,12.333,5.667" Width="568" BorderBrush="#FFFF7B4A" Foreground="White">
-            <Grid Margin="0,0,-2,-1">
-                <Label x:Name="labelBotName" Content="Bot1:Ayy @LMAO" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontSize="14" FontStyle="Italic" FontWeight="Bold"/>
-                <Label x:Name="labelWindowPositionDesc" Content="Window Position:" HorizontalAlignment="Left" Margin="0,23,0,0" VerticalAlignment="Top" Foreground="White"/>
-                <Label x:Name="labelWindowPosition" Content="labelWindowPosition" HorizontalAlignment="Left" Margin="142,23,0,0" VerticalAlignment="Top" Foreground="White" FontStyle="Italic"/>
-                <Label x:Name="labelSavedWindowPositionDesc" Content="Saved Window Position:" HorizontalAlignment="Left" Margin="0,47,0,0" VerticalAlignment="Top" Foreground="White"/>
-                <Label x:Name="labelSavedWindowPosition" Content="labelSavedWindowPosition" HorizontalAlignment="Left" Margin="142,47,0,0" VerticalAlignment="Top" Foreground="White" FontStyle="Italic"/>
-                <Button x:Name="buttonSaveWindowPosition" Content="Save Position" HorizontalAlignment="Left" Margin="99,74,0,0" VerticalAlignment="Top" Width="90" Click="ButtonSaveWindowPosition_Click" Foreground="White" Background="{x:Null}" BorderBrush="White"/>
-                <Button x:Name="buttonResetWindowPosition" Content="Reset Position" HorizontalAlignment="Left" Margin="194,74,0,0" VerticalAlignment="Top" Width="90" Click="ButtonResetWindowPosition_Click" Background="{x:Null}" Foreground="White" BorderBrush="White"/>
-                <Button x:Name="buttonApplySavedWindowPosition" Content="Apply Position" HorizontalAlignment="Left" Margin="4,74,0,0" VerticalAlignment="Top" Width="90" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonApplySavedWindowPosition_Click"/>
-            </Grid>
-        </GroupBox>
-        <ListBox x:Name="listboxBots" HorizontalAlignment="Left" Margin="8,145,0,5.667" Width="200" Background="#FF646464" BorderBrush="White" Foreground="White" SelectionChanged="ListboxBots_SelectionChanged"/>
+        <WrapPanel Height="26" VerticalAlignment="Top" FlowDirection="RightToLeft">
+            <Button x:Name="buttonClose" Style="{StaticResource CustomButtonStyle}" Content="X" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonClose_Click" FontSize="14"/>
+        </WrapPanel>
+        <WrapPanel Margin="0,26,0,0" Background="#FF232323">
+            <GroupBox Header="Global Settings" Height="132" VerticalAlignment="Top" BorderBrush="{x:Null}" Foreground="White" Width="790" BorderThickness="0" FontSize="14" FontWeight="Bold">
+                <Grid Margin="0,0,0,0">
+                    <Label x:Name="labelWowExePathDesc" Content="Wow.exe Path:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelBotPictureFolderDesc" Content="Bot Picture Folder:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,18,0,0" Grid.ColumnSpan="2" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelBotFleetConfigDesc" Content="Bot Fleet Config:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,36,0,0" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelWowExePath" Content="C:/Wow/Wow.exe" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="214,0,0,0" FontStyle="Italic" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelBotPictureFolder" Content="C:/BotPictures/" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="214,18,0,0" FontStyle="Italic" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelBotFleetConfig" Content="C:/AmeisenBotRevamped/Bots.json" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="214,36,0,0" FontStyle="Italic" FontWeight="Normal" FontSize="12"/>
+                    <Button x:Name="buttonBotFleetConfig" Style="{StaticResource CustomButtonStyle}" Content=" 📁Open" HorizontalAlignment="Left" Margin="139,41,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonBotFleetConfig_Click" FontWeight="Normal"/>
+                    <Button x:Name="buttonBotPictureFolder" Style="{StaticResource CustomButtonStyle}" Content=" 📁Open" HorizontalAlignment="Left" Margin="139,23,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonBotPictureFolder_Click" FontWeight="Normal"/>
+                    <Button x:Name="buttonWowExePath" Style="{StaticResource CustomButtonStyle}" Content=" 📁Open" HorizontalAlignment="Left" Margin="139,5,0,0" VerticalAlignment="Top" Width="75" Height="18" FontSize="10" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonWowExePath_Click" FontWeight="Normal"/>
+                    <Label x:Name="labelBotFleetConfigDesc_Copy" Content="Navmesh Server IP:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,62,0,0" Grid.ColumnSpan="2" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelBotFleetConfigDesc_Copy1" Content="Navmesh Server Port:" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" Margin="0,80,0,0" Grid.ColumnSpan="2" FontWeight="Normal" FontSize="12"/>
+                    <TextBox x:Name="textboxNavmeshServerPort" HorizontalAlignment="Left" Height="19" Margin="139,84,0,0" TextWrapping="Wrap" Text="47110" VerticalAlignment="Top" Width="120" Background="{x:Null}" Foreground="White" BorderBrush="White" TextChanged="TextboxNavmeshServerPort_TextChanged" Loaded="TextboxNavmeshServerPort_Loaded" FontWeight="Normal" FontSize="12"/>
+                    <TextBox x:Name="textboxNavmeshServerIp" HorizontalAlignment="Left" Height="19" Margin="139,64,0,0" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="120" Background="{x:Null}" Foreground="White" BorderBrush="White" TextChanged="TextboxNavmeshServerIp_TextChanged" Loaded="TextboxNavmeshServerIp_Loaded" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelNavmeshServerIpCheck" Content="✔️/ ❌" HorizontalAlignment="Left" Margin="259,60,0,0" VerticalAlignment="Top" FontWeight="Normal" FontSize="12"/>
+                    <Label x:Name="labelNavmeshServerPortCheck" Content="✔️/ ❌" HorizontalAlignment="Left" Margin="259,80,0,0" VerticalAlignment="Top" FontWeight="Normal" FontSize="12"/>
+                </Grid>
+            </GroupBox>
+            <ListBox x:Name="listboxBots" HorizontalAlignment="Left" Width="200" Background="#FF0C0C0C" BorderBrush="{x:Null}" Foreground="White" SelectionChanged="ListboxBots_SelectionChanged" Height="260"/>
+            <GroupBox Header="Bot Settings" HorizontalAlignment="Right" Width="590" BorderBrush="{x:Null}" Foreground="White" Height="260" BorderThickness="0" FontWeight="Bold" FontSize="14">
+                <Grid Margin="0,0,-2,-1">
+                    <Label x:Name="labelBotName" Content="Select a bot..." HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                    <Label x:Name="labelWindowPositionDesc" Content="Window Position:" HorizontalAlignment="Left" Margin="0,23,0,0" VerticalAlignment="Top" Foreground="White" FontSize="12" FontWeight="Normal"/>
+                    <Label x:Name="labelWindowPosition" Content="n/a" HorizontalAlignment="Left" Margin="142,23,0,0" VerticalAlignment="Top" Foreground="White" FontStyle="Italic" FontSize="12" FontWeight="Normal"/>
+                    <Label x:Name="labelSavedWindowPositionDesc" Content="Saved Window Position:" HorizontalAlignment="Left" Margin="0,47,0,0" VerticalAlignment="Top" Foreground="White" FontSize="12" FontWeight="Normal"/>
+                    <Label x:Name="labelSavedWindowPosition" Content="n/a" HorizontalAlignment="Left" Margin="142,47,0,0" VerticalAlignment="Top" Foreground="White" FontStyle="Italic" FontSize="12" FontWeight="Normal"/>
+                    <Button x:Name="buttonSaveWindowPosition" Style="{StaticResource CustomButtonStyle}" Content="Save Position" HorizontalAlignment="Left" Margin="99,74,0,0" VerticalAlignment="Top" Width="90" Click="ButtonSaveWindowPosition_Click" Foreground="White" Background="{x:Null}" BorderBrush="White" FontSize="10" FontWeight="Normal"/>
+                    <Button x:Name="buttonResetWindowPosition" Style="{StaticResource CustomButtonStyle}" Content="Reset Position" HorizontalAlignment="Left" Margin="194,74,0,0" VerticalAlignment="Top" Width="90" Click="ButtonResetWindowPosition_Click" Background="{x:Null}" Foreground="White" BorderBrush="White" FontSize="10" FontWeight="Normal"/>
+                    <Button x:Name="buttonApplySavedWindowPosition" Style="{StaticResource CustomButtonStyle}" Content="Apply Position" HorizontalAlignment="Left" Margin="4,74,0,0" VerticalAlignment="Top" Width="90" Background="{x:Null}" Foreground="White" BorderBrush="White" Click="ButtonApplySavedWindowPosition_Click" FontSize="10" FontWeight="Normal"/>
+                </Grid>
+            </GroupBox>
+        </WrapPanel>
+        <Label Content="🤖" HorizontalAlignment="Left" Margin="0,-4,0,0" VerticalAlignment="Top" Foreground="White" FontSize="16"/>
+        <Label x:Name="labelWindowTitle" Content="AmeisenBot - Settings" HorizontalAlignment="Left" Margin="26,-2,0,0" VerticalAlignment="Top" Foreground="#FFDEDEDE" Background="{x:Null}" FontSize="14"/>
     </Grid>
 </Window>

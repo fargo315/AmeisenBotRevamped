@@ -11,9 +11,10 @@ namespace AmeisenBotRevamped.ObjectManager
         // This lock prevents changes to the Objects List while a query is running
         private readonly object QueryLock = new object();
 
-        private IWowDataAdapter WowDataAdapter { get; set; }
+        private IWowDataAdapter WowDataAdapter { get; }
 
         private List<WowObject> wowObjects;
+
         public List<WowObject> WowObjects {
             get => wowObjects;
             set { lock (QueryLock) { wowObjects = value; } }
@@ -36,7 +37,7 @@ namespace AmeisenBotRevamped.ObjectManager
             lock (QueryLock)
             {
                 IEnumerable<WowObject> items = WowObjects.Where(obj => obj.Guid == guid);
-                wowObject = items.Count() > 0 ? items.First() : null;
+                wowObject = items.FirstOrDefault();
             }
 
             if (wowObject == null) return null;

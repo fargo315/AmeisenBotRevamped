@@ -1,14 +1,13 @@
-﻿using AmeisenBotRevamped.Autologin.Structs;
+﻿using AmeisenBotRevamped.ActionExecutors;
+using AmeisenBotRevamped.Autologin.Structs;
 using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.OffsetLists;
-using TrashMemCore;
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Text;
-using AmeisenBotRevamped.ActionExecutors;
+using System.Threading;
+using TrashMemCore;
 
 namespace AmeisenBotRevamped.Autologin
 {
@@ -58,12 +57,12 @@ namespace AmeisenBotRevamped.Autologin
             }
             catch (Exception e)
             {
-                AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tCrash at Login: \n{e.ToString()}", LogLevel.Error);
+                AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tCrash at Login: \n{e}", LogLevel.Error);
             }
 
             AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tLogin successful...", LogLevel.Verbose);
             LoginInProgress = false;
-            LoginInProgressCharactername = "";
+            LoginInProgressCharactername = string.Empty;
         }
 
         private void HandleLogin(TrashMem trashMem, Process process, WowAccount wowAccount)
@@ -98,7 +97,7 @@ namespace AmeisenBotRevamped.Autologin
                 Thread.Sleep(3000);
 
                 firstTime = false;
-            } while (trashMem.ReadString(OffsetList.StaticGameState, Encoding.ASCII,10) == "login");
+            } while (trashMem.ReadString(OffsetList.StaticGameState, Encoding.ASCII, 10) == "login");
         }
 
         private void HandleCharSelect(TrashMem trashMem, Process process, WowAccount wowAccount)

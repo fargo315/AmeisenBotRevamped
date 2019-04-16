@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AmeisenBotRevamped.CharacterManager
 {
-    public abstract class ItemFactory
+    public static class ItemFactory
     {
         public static IItem BuildSpecificItem(RawItem rawItem)
         {

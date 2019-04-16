@@ -60,22 +60,22 @@ namespace AmeisenBotRevamped.DataAdapters
         #region Internal Properties
         // You may not need them but who knows
 
-        public IOffsetList OffsetList { get; private set; }
-        public TrashMem TrashMem { get; private set; }
+        public IOffsetList OffsetList { get; }
+        public TrashMem TrashMem { get; }
         #endregion
 
         #region External Properties
         // Interesting stuff
 
         public BasicInfoDataSet BasicInfoDataSet { get; private set; }
-        public WowObjectManager ObjectManager { get; private set; }
+        public WowObjectManager ObjectManager { get; }
 
         public List<ulong> PartymemberGuids => ReadPartymemberGuids();
         public ulong PartyleaderGuid => ReadPartyLeaderGuid();
         public OnGamestateChanged OnGamestateChanged { get; set; }
         public bool ObjectUpdatesEnabled => ActiveWowObjectsWatchdog.Enabled;
         #endregion
-        
+
         public MemoryWowDataAdapter(TrashMem trashMem, IOffsetList offsetList)
         {
             LastIsWorldLoaded = false;
@@ -269,7 +269,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
             string name = ReadString(current + OffsetList.OffsetNameString, 12);
 
-            if (name != "" && !SharedCacheManager.Instance.PlayerNameCache.ContainsKey(guid))
+            if (name.Length != 0 && !SharedCacheManager.Instance.PlayerNameCache.ContainsKey(guid))
                 SharedCacheManager.Instance.PlayerNameCache.Add(guid, name);
 
             return name;
@@ -288,7 +288,7 @@ namespace AmeisenBotRevamped.DataAdapters
                 objName = ReadUInt(objName + 0x05C);
                 string name = ReadString(objName, 24);
 
-                if (name != "" && !SharedCacheManager.Instance.UnitNameCache.ContainsKey(guid))
+                if (name.Length != 0 && !SharedCacheManager.Instance.UnitNameCache.ContainsKey(guid))
                     SharedCacheManager.Instance.UnitNameCache.Add(guid, name);
                 return name;
             }

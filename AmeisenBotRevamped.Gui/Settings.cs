@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static AmeisenBotRevamped.ActionExecutors.SafeNativeMethods;
 
 namespace AmeisenBotRevamped.Gui
 {
@@ -16,7 +15,7 @@ namespace AmeisenBotRevamped.Gui
         public string BotFleetConfig { get; set; }
         public string BotPictureFolder { get; set; }
 
-        public Dictionary<string, Rect> WowPositions { get; private set; }
+        public Dictionary<string, ActionExecutors.Structs.Rect> WowPositions { get; }
 
         public Settings()
         {
@@ -27,7 +26,7 @@ namespace AmeisenBotRevamped.Gui
             BotFleetConfig = "";
             BotPictureFolder = "";
 
-            WowPositions = new Dictionary<string, Rect>();
+            WowPositions = new Dictionary<string, ActionExecutors.Structs.Rect>();
         }
     }
 }

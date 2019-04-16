@@ -8,11 +8,12 @@ using System.Threading;
 
 namespace AmeisenBotRevamped.Logging
 {
-    public class AmeisenBotLogger
+    public sealed class AmeisenBotLogger
     {
         private static readonly object padlock = new object();
 
         private static AmeisenBotLogger instance;
+
         public static AmeisenBotLogger Instance
         {
             get
@@ -32,7 +33,7 @@ namespace AmeisenBotRevamped.Logging
         public string LogFilePath { get; private set; }
 
         private Thread LogWorker { get; set; }
-        private ConcurrentQueue<LogEntry> LogQueue { get; set; }
+        private ConcurrentQueue<LogEntry> LogQueue { get; }
 
         private AmeisenBotLogger()
         {
@@ -47,7 +48,7 @@ namespace AmeisenBotRevamped.Logging
         {
             Enabled = true;
 
-            if (LogWorker == null || !LogWorker.IsAlive)
+            if (LogWorker?.IsAlive != true)
             {
                 LogWorker = new Thread(new ThreadStart(DoLogWork));
                 LogWorker.Start();

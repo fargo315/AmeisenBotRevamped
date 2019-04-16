@@ -4,10 +4,10 @@ namespace AmeisenBotRevamped.Utils
 {
     public class WowProcess
     {
-        public Process Process { get; private set; }
-        public string CharacterName { get; private set; }
-        public string RealmName { get; private set; }
-        public bool IsHooked { get; private set; }
+        public Process Process { get; }
+        public string CharacterName { get; }
+        public string RealmName { get; }
+        public bool IsHooked { get; }
 
         public WowProcess(Process process, string characterName, string realmName, bool isHooked)
         {

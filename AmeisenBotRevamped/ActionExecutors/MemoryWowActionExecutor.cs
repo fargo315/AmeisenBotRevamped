@@ -14,6 +14,7 @@ using System.Threading;
 using TrashMemCore.Objects;
 using Fasm;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
@@ -30,10 +31,10 @@ namespace AmeisenBotRevamped.ActionExecutors
         // You may not need them but who knows
         public const uint ENDSCENE_HOOK_OFFSET = 0x2;
 
-        public IOffsetList OffsetList { get; private set; }
-        public TrashMem TrashMem { get; private set; }
+        public IOffsetList OffsetList { get; }
+        public TrashMem TrashMem { get; }
 
-        public byte[] OriginalEndsceneBytes { get; private set; }
+        public byte[] originalEndsceneBytes;
 
         public uint EndsceneAddress { get; private set; }
         public uint EndsceneReturnAddress { get; private set; }
@@ -42,11 +43,13 @@ namespace AmeisenBotRevamped.ActionExecutors
         public MemoryAllocation CodecaveForCheck { get; private set; }
         public MemoryAllocation CodecaveForExecution { get; private set; }
         public bool IsInjectionUsed { get; private set; }
+
         #endregion
 
         public MemoryWowActionExecutor(TrashMem trashMem, IOffsetList offsetList)
         {
-            OriginalEndsceneBytes = offsetList.EndSceneBytes;
+            originalEndsceneBytes = offsetList.EndSceneBytes;
+
             TrashMem = trashMem;
             OffsetList = offsetList;
 
@@ -85,15 +88,15 @@ namespace AmeisenBotRevamped.ActionExecutors
             return -1;
         }
 
-        public void CastSpell(string spellName, bool castOnSelf = false)
+        public void CastSpell(string name, bool castOnSelf = false)
         {
             if (castOnSelf)
             {
-                LuaDoString($"CastSpellByName(\"{spellName}\", true);");
+                LuaDoString($"CastSpellByName(\"{name}\", true);");
             }
             else
             {
-                LuaDoString($"CastSpellByName(\"{spellName}\");");
+                LuaDoString($"CastSpellByName(\"{name}\");");
             }
         }
 
@@ -223,7 +226,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
             // if WoW is already hooked, unhook it
             if (IsWoWHooked) { DisposeHook(); }
-            else { OriginalEndsceneBytes = TrashMem.ReadChars(EndsceneAddress, 5); }
+            else { originalEndsceneBytes = TrashMem.ReadChars(EndsceneAddress, 5); }
 
             // if WoW is now/was unhooked, hook it
             if (!IsWoWHooked)
@@ -294,7 +297,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // do the original EndScene stuff after we restored the registers
                 // and insert it after our code
-                TrashMem.WriteBytes(CodecaveForCheck.Address + (uint)asmLenght, OriginalEndsceneBytes);
+                TrashMem.WriteBytes(CodecaveForCheck.Address + (uint)asmLenght, originalEndsceneBytes);
 
                 // return to original function after we're done with our stuff
                 TrashMem.Asm.AddLine($"JMP {EndsceneReturnAddress}");
@@ -322,7 +325,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 if (IsWoWHooked)
                 {
                     AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDisposing Hook", LogLevel.Verbose);
-                    TrashMem.WriteBytes(EndsceneAddress, OriginalEndsceneBytes);
+                    TrashMem.WriteBytes(EndsceneAddress, originalEndsceneBytes);
 
                     if (CodecaveForCheck != null)
                         TrashMem.FreeMemory(CodecaveForCheck);
@@ -345,9 +348,9 @@ namespace AmeisenBotRevamped.ActionExecutors
             return TrashMem.ReadUInt32(pScene + OffsetList.EndSceneOffset);
         }
 
-        public byte[] InjectAndExecute(string[] asm, bool readReturnBytes)
+        public byte[] InjectAndExecute(string[] asm, bool readReturnBytes, [CallerMemberName]string callingFunction = "")
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjecting ASM into Hook [asm = {JsonConvert.SerializeObject(asm)}, readReturnBytes = {readReturnBytes}]", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjecting ASM into Hook [asm = {JsonConvert.SerializeObject(asm)}, readReturnBytes = {readReturnBytes}, callingFunction = {callingFunction}]", LogLevel.Verbose);
             List<byte> returnBytes = new List<byte>();
 
             if (!IsWorldLoaded)
@@ -397,14 +400,14 @@ namespace AmeisenBotRevamped.ActionExecutors
                     }
                     catch (Exception e)
                     {
-                        AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at reading the return bytes: \n{e.ToString()}", LogLevel.Error);
+                        AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at reading the return bytes: \n{e}", LogLevel.Error);
                     }
                 }
                 IsInjectionUsed = false;
             }
             catch (Exception e)
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e.ToString()}", LogLevel.Error);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e}", LogLevel.Error);
                 // now there is no more code to be executed
                 TrashMem.ReadUnmanaged<uint>(CodeToExecuteAddress.Address, 0);
                 IsInjectionUsed = false;
@@ -440,8 +443,8 @@ namespace AmeisenBotRevamped.ActionExecutors
             SendChatMessage("/click StaticPopup1Button1");
         }
 
-        public void SendChatMessage(string command)
-            => LuaDoString($"DEFAULT_CHAT_FRAME.editBox:SetText(\"{command}\") ChatEdit_SendText(DEFAULT_CHAT_FRAME.editBox, 0)");
+        public void SendChatMessage(string message)
+            => LuaDoString($"DEFAULT_CHAT_FRAME.editBox:SetText(\"{message}\") ChatEdit_SendText(DEFAULT_CHAT_FRAME.editBox, 0)");
 
         public UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB)
         {
@@ -484,7 +487,6 @@ namespace AmeisenBotRevamped.ActionExecutors
 
             try
             {
-
                 byte[] reactionBytes = InjectAndExecute(asm, true);
                 reaction = (UnitReaction)TrashMem.ReadInt32(memAlloc.Address);
 
@@ -520,23 +522,23 @@ namespace AmeisenBotRevamped.ActionExecutors
             InjectAndExecute(asm, false);
         }
 
-        public List<string> GetAuras(string luaUnitName)
+        public List<string> GetAuras(string luaunitName)
         {
-            List<string> result = new List<string>(GetBuffs(luaUnitName));
-            result.AddRange(GetDebuffs(luaUnitName));
+            List<string> result = new List<string>(GetBuffs(luaunitName));
+            result.AddRange(GetDebuffs(luaunitName));
             return result;
         }
 
-        public List<string> GetBuffs(string luaUnitName)
+        public List<string> GetBuffs(string luaunitName)
         {
             List<string> resultLowered = new List<string>();
             StringBuilder cmdBuffs = new StringBuilder();
             cmdBuffs.Append("local buffs, i = { }, 1;");
-            cmdBuffs.Append($"local buff = UnitBuff(\"{luaUnitName}\", i);");
+            cmdBuffs.Append("local buff = UnitBuff(\"").Append(luaunitName).Append("\", i);");
             cmdBuffs.Append("while buff do\n");
             cmdBuffs.Append("buffs[#buffs + 1] = buff;");
             cmdBuffs.Append("i = i + 1;");
-            cmdBuffs.Append($"buff = UnitBuff(\"{luaUnitName}\", i);");
+            cmdBuffs.Append("buff = UnitBuff(\"").Append(luaunitName).Append("\", i);");
             cmdBuffs.Append("end;");
             cmdBuffs.Append("if #buffs < 1 then\n");
             cmdBuffs.Append("buffs = \"\";");
@@ -555,16 +557,16 @@ namespace AmeisenBotRevamped.ActionExecutors
             return resultLowered;
         }
 
-        public List<string> GetDebuffs(string luaUnitName)
+        public List<string> GetDebuffs(string luaunitName)
         {
             List<string> resultLowered = new List<string>();
             StringBuilder cmdDebuffs = new StringBuilder();
             cmdDebuffs.Append("local buffs, i = { }, 1;");
-            cmdDebuffs.Append($"local buff = UnitDebuff(\"{luaUnitName}\", i);");
+            cmdDebuffs.Append("local buff = UnitDebuff(\"").Append(luaunitName).Append("\", i);");
             cmdDebuffs.Append("while buff do\n");
             cmdDebuffs.Append("buffs[#buffs + 1] = buff;");
             cmdDebuffs.Append("i = i + 1;");
-            cmdDebuffs.Append($"buff = UnitDebuff(\"{luaUnitName}\", i);");
+            cmdDebuffs.Append("buff = UnitDebuff(\"").Append(luaunitName).Append("\", i);");
             cmdDebuffs.Append("end;");
             cmdDebuffs.Append("if #buffs < 1 then\n");
             cmdDebuffs.Append("buffs = \"\";");

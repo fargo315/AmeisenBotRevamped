@@ -22,7 +22,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public double UnitFollowThresholdLeaderMax => 120.0;
 
         public BotState CurrentState { get; private set; }
-        private Dictionary<Type, BotState> BotStates { get; set; }
+        private Dictionary<Type, BotState> BotStates { get; }
 
         internal IWowActionExecutor WowActionExecutor { get; set; }
         internal IWowDataAdapter WowDataAdapter { get; set; }
@@ -32,7 +32,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public IMovementProvider MovementProvider { get; set; }
         public ISpellStrategy SpellStrategy { get; set; }
 
-        private Timer StateMachineTimer { get; set; }
+        private Timer StateMachineTimer { get; }
         public void Start() => StateMachineTimer.Start();
         public void Stop() => StateMachineTimer.Stop();
         public bool Enabled => StateMachineTimer.Enabled;
@@ -77,7 +77,7 @@ namespace AmeisenBotRevamped.AI.StateMachine
             }
             catch (Exception ex)
             {
-                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex.ToString()}");
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex}");
             }
         }
 

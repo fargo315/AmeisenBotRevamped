@@ -14,12 +14,12 @@ namespace AmeisenBotRevamped.CharacterManager
 {
     public class WowCharacterManager
     {
-        public IWowDataAdapter WowDataAdapter { get; private set; }
-        public IWowActionExecutor WowActionExecutor { get; private set; }
-        public IItemComparator ItemComparator { get; private set; }
+        public IWowDataAdapter WowDataAdapter { get; }
+        public IWowActionExecutor WowActionExecutor { get; }
+        public IItemComparator ItemComparator { get; }
 
-        public Dictionary<EquipmentSlot, IItem> CurrentEquipment { get; private set; }
-        public List<IItem> InventoryItems { get; private set; }
+        public Dictionary<EquipmentSlot, IItem> CurrentEquipment { get; }
+        public List<IItem> InventoryItems { get; }
 
         public List<ArmorItem> Armor => InventoryItems.OfType<ArmorItem>().ToList();
         public List<ConsumableItem> Consumables => InventoryItems.OfType<ConsumableItem>().ToList();
@@ -69,7 +69,7 @@ namespace AmeisenBotRevamped.CharacterManager
                 }
                 catch (Exception ex)
                 {
-                    AmeisenBotLogger.Instance.Log($"Crash at parsing the InventoryItems: \n{ex.ToString()}", LogLevel.Error);
+                    AmeisenBotLogger.Instance.Log($"Crash at parsing the InventoryItems: \n{ex}", LogLevel.Error);
                 }
             }
         }
@@ -86,13 +86,19 @@ namespace AmeisenBotRevamped.CharacterManager
             CurrentEquipment.Clear();
             foreach (EquipmentSlot equipmentSlot in Enum.GetValues(typeof(EquipmentSlot)))
             {
-                if (equipmentSlot == EquipmentSlot.NOT_EQUIPABLE) continue;
+                if (equipmentSlot == EquipmentSlot.NOT_EQUIPABLE)
+                {
+                    continue;
+                }
 
                 try
                 {
                     string resultJson = ReadEquitmentSlot(equipmentSlot);
 
-                    if (resultJson == "noItem") continue;
+                    if (resultJson == "noItem")
+                    {
+                        continue;
+                    }
 
                     RawItem rawItem = JsonConvert.DeserializeObject<RawItem>(resultJson);
                     CurrentEquipment.Add(equipmentSlot, ItemFactory.BuildSpecificItem(rawItem));
@@ -100,7 +106,7 @@ namespace AmeisenBotRevamped.CharacterManager
                 }
                 catch (Exception ex)
                 {
-                    AmeisenBotLogger.Instance.Log($"Crash at updating the EquipmentSlot [{equipmentSlot.ToString()}]: \n{ex.ToString()}", LogLevel.Error);
+                    AmeisenBotLogger.Instance.Log($"Crash at updating the EquipmentSlot [{equipmentSlot.ToString()}]: \n{ex}", LogLevel.Error);
                 }
             }
         }
