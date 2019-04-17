@@ -32,9 +32,11 @@ namespace AmeisenBotRevamped.Gui.BotManager
 
         public List<Thread> AmeisenBotThreads { get; private set; }
         public List<Thread> AmeisenBotWatchdogThreads { get; private set; }
+        public List<Thread> DispatcherThreads { get; private set; }
 
         private List<WowProcess> ActiveWowProcesses { get; set; }
-        public List<ManagedAmeisenBot> ManagedAmeisenBots { get; set; }
+        public List<AmeisenBot> UnmanagedAmeisenBots { get; }
+        public List<ManagedAmeisenBot> ManagedAmeisenBots { get; private set; }
 
         private Thread WowDispatcher { get; set; }
         private ConcurrentQueue<WowAccount> AmeisenBotQueue { get; set; }
@@ -42,9 +44,11 @@ namespace AmeisenBotRevamped.Gui.BotManager
         private List<WowAccount> WowAccounts { get; set; }
         private Dictionary<WowAccount, StartState> WowAccountsRunning { get; set; }
 
-        public AmeisenBotManager(Settings settings, List<WowAccount> wowAccounts, IOffsetList offsetList)
+        public AmeisenBotManager(List<AmeisenBot> unmanagedAmeisenBots, Settings settings, List<WowAccount> wowAccounts, IOffsetList offsetList)
         {
             AmeisenBotLogger.Instance.Log("Initializing AmeisenBotManager", LogLevel.Verbose);
+
+            UnmanagedAmeisenBots = unmanagedAmeisenBots;
 
             Enabled = false;
             Init(settings, wowAccounts, offsetList);
@@ -61,6 +65,7 @@ namespace AmeisenBotRevamped.Gui.BotManager
             WowDispatcher = new Thread(new ThreadStart(RunWowDispatcher));
             AmeisenBotThreads = new List<Thread>();
             AmeisenBotWatchdogThreads = new List<Thread>();
+            DispatcherThreads = new List<Thread>();
 
             ActiveWowProcesses = new List<WowProcess>();
             ManagedAmeisenBots = new List<ManagedAmeisenBot>();
@@ -88,9 +93,14 @@ namespace AmeisenBotRevamped.Gui.BotManager
                 bot.AmeisenBot.Detach();
             }
 
-            foreach (Thread t in AmeisenBotThreads)
+            foreach (Thread t in DispatcherThreads)
             {
                 t.Abort();
+                t.Join();
+            }
+
+            foreach (Thread t in AmeisenBotThreads)
+            {
                 t.Join();
             }
 
@@ -117,11 +127,33 @@ namespace AmeisenBotRevamped.Gui.BotManager
                             && WowAccountsRunning.TryGetValue(wowAccount, out StartState state)
                             && state == StartState.NotRunning)
                         {
-                            // The bot is now going to be started
-                            WowAccountsRunning[wowAccount] = StartState.StartInProgress;
+                            // make sure the account is not already active
+                            if (!UnmanagedAmeisenBots.Any(u => u.CharacterName == wowAccount.CharacterName))
+                            {                                 // The bot is now going to be started
+                                WowAccountsRunning[wowAccount] = StartState.StartInProgress;
 
-                            WowProcess wowProcess = FindUnusedWowProcess();
-                            DoLogin(wowProcess, wowAccount);
+                                WowProcess wowProcess = FindUnusedWowProcess();
+                                DoLogin(wowProcess, wowAccount);
+
+                                /*Thread dispatcherThread = new Thread(new ThreadStart(() => ));
+                                DispatcherThreads.Add(dispatcherThread);
+                                dispatcherThread.Start();*/
+                            }
+                            else // otherwise just add a watchdog
+                            {
+                                SetupAmeisenBotThread(
+                                    wowAccount, 
+                                    UnmanagedAmeisenBots.First(u => u.CharacterName == wowAccount.CharacterName), 
+                                    out Thread ameisenbotThread, 
+                                    out ManagedAmeisenBot managedAmeisenBot);
+
+                                // start the watchdog that will restart the wow when it crashed
+                                Thread watchdogThread = SetupAmeisenBotThread(managedAmeisenBot);
+
+                                // start the thread and its watchdog
+                                ameisenbotThread.Start();
+                                watchdogThread.Start();
+                            }
                         }
 
                         RemoveDeadProcesses();
@@ -138,11 +170,7 @@ namespace AmeisenBotRevamped.Gui.BotManager
 
         private WowProcess FindUnusedWowProcess()
         {
-            // Get all WowProcesses that are free to use
-            IEnumerable<WowProcess> unusedWowProcesses =
-                ActiveWowProcesses.Where(
-                    w => !w.LoginInProgress
-                    && w.CharacterName.Length == 0);
+            IEnumerable<WowProcess> unusedWowProcesses = GetUnusedWowProcesses();
 
             WowProcess wowProcessToUse = null;
             // Search for a useable wow process
@@ -154,6 +182,7 @@ namespace AmeisenBotRevamped.Gui.BotManager
                     Process newWowProcess = StartWowProcess();
                     // after we started the wow, rescan all processes
                     ActiveWowProcesses = BotUtils.GetRunningWows(OffsetList);
+                    unusedWowProcesses = GetUnusedWowProcesses();
                 }
                 else
                 {
@@ -163,24 +192,46 @@ namespace AmeisenBotRevamped.Gui.BotManager
             return wowProcessToUse;
         }
 
+        private IEnumerable<WowProcess> GetUnusedWowProcesses()
+        {
+            // Get all WowProcesses that are free to use
+            return ActiveWowProcesses.Where(
+                    w => !w.LoginInProgress
+                    && w.CharacterName.Length == 0);
+        }
+
         private void DoLogin(WowProcess wowProcess, WowAccount wowAccount)
         {
             // now we are going to attach and use this process
             wowProcess.LoginInProgress = true;
             AmeisenBot bot = SetupAmeisenBot(wowProcess.Process);
 
+            // do the login
+            bot.AutologinProvider.DoLogin(wowProcess.Process, wowAccount, OffsetList);
+
             // create a thred for the Bot to run on
-            Thread ameisenbotThread = new Thread(new ThreadStart(() => AttachAmeisenBot(bot)));
-            AmeisenBotThreads.Add(ameisenbotThread);
-            ManagedAmeisenBot managedAmeisenBot = new ManagedAmeisenBot(ameisenbotThread, bot, wowAccount);
+            SetupAmeisenBotThread(wowAccount, bot, out Thread ameisenbotThread, out ManagedAmeisenBot managedAmeisenBot);
 
             // start the watchdog that will restart the wow when it crashed
-            Thread watchdogThread = new Thread(new ThreadStart(() => RunWowWatchdog(managedAmeisenBot)));
-            AmeisenBotWatchdogThreads.Add(watchdogThread);
+            Thread watchdogThread = SetupAmeisenBotThread(managedAmeisenBot);
 
             // start the thread and its watchdog
             ameisenbotThread.Start();
             watchdogThread.Start();
+        }
+
+        private Thread SetupAmeisenBotThread(ManagedAmeisenBot managedAmeisenBot)
+        {
+            Thread watchdogThread = new Thread(new ThreadStart(() => RunWowWatchdog(managedAmeisenBot)));
+            AmeisenBotWatchdogThreads.Add(watchdogThread);
+            return watchdogThread;
+        }
+
+        private void SetupAmeisenBotThread(WowAccount wowAccount, AmeisenBot bot, out Thread ameisenbotThread, out ManagedAmeisenBot managedAmeisenBot)
+        {
+            ameisenbotThread = new Thread(new ThreadStart(() => AttachAmeisenBot(bot)));
+            AmeisenBotThreads.Add(ameisenbotThread);
+            managedAmeisenBot = new ManagedAmeisenBot(ameisenbotThread, bot, wowAccount);
         }
 
         public AmeisenBot SetupAmeisenBot(Process wowProcess)
@@ -214,6 +265,8 @@ namespace AmeisenBotRevamped.Gui.BotManager
             IPathfindingClient pathfindingClient = new AmeisenNavPathfindingClient(Settings.AmeisenNavmeshServerIp, Settings.AmeisenNavmeshServerPort, bot.Process.Id);
             IWowEventAdapter wowEventAdapter = new LuaHookWowEventAdapter(wowActionExecutor);
             bot.Attach(wowActionExecutor, pathfindingClient, wowEventAdapter, new BasicMeleeMovementProvider(), null);
+
+            bot.SetWindowPosition(Settings.WowPositions[bot.CharacterName]);
         }
 
         private Process StartWowProcess()

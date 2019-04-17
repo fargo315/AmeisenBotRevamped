@@ -27,6 +27,7 @@ namespace AmeisenBotRevamped.Gui
         private readonly object botViewsLock = new object();
         private static readonly string SettingsPath = AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
+        private List<AmeisenBot> UnmanagedAmeisenBots { get; set; }
         private List<BotView> BotViews { get; set; }
 
         private Timer ViewUpdateTimer { get; }
@@ -40,6 +41,8 @@ namespace AmeisenBotRevamped.Gui
         {
             InitializeComponent();
 
+            UnmanagedAmeisenBots = new List<AmeisenBot>();
+
             AmeisenBotLogger.Instance.ActiveLogLevel = LogLevel.Verbose;
             AmeisenBotLogger.Instance.Start();
             AmeisenBotLogger.Instance.Log("AmeisenBotGui loading...");
@@ -51,7 +54,7 @@ namespace AmeisenBotRevamped.Gui
 
             LoadSettings();
 
-            AmeisenBotManager = new AmeisenBotManager(Settings, ReadBotFleetAccounts(), OffsetList);
+            AmeisenBotManager = new AmeisenBotManager(UnmanagedAmeisenBots, Settings, ReadBotFleetAccounts(), OffsetList);
         }
 
         #region UIEvents
@@ -122,10 +125,13 @@ namespace AmeisenBotRevamped.Gui
                 if (!BotViews.Any(b => b.AmeisenBot.Process.Id == process.Process.Id)
                     && !AmeisenBotManager.ManagedAmeisenBots.Any(m => m.AmeisenBot.Process.Id == process.Process.Id))
                 {
+                    AmeisenBot newAmeisenBot = AmeisenBotManager.SetupAmeisenBot(process.Process);
                     Dispatcher.Invoke(() => BotViews.Add(new BotView(
-                        AmeisenBotManager.SetupAmeisenBot(process.Process),
+                        newAmeisenBot,
                         Settings,
                         AmeisenBotManager.AttachAmeisenBotOnNewThread)));
+
+                    UnmanagedAmeisenBots.Add(newAmeisenBot);
                 }
             }
 

@@ -50,7 +50,12 @@ namespace AmeisenBotRevamped.EventAdapters
             WowActionExecutor.LuaDoString($"abFrame:SetScript(\"OnEvent\", nil);");
 
             Enabled = false;
-            EventReaderThread.Join();
+
+            try
+            {
+                EventReaderThread.Join();
+            }
+            catch { }
         }
 
         public bool Enabled { get; set; }
