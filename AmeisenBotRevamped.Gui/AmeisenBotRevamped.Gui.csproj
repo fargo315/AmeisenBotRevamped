@@ -87,6 +87,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BotManager\AmeisenBotManager.cs" />
+    <Compile Include="BotManager\Enums\StartState.cs" />
+    <Compile Include="BotManager\Objects\ManagedAmeisenBot.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>

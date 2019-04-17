@@ -5,16 +5,15 @@ using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.OffsetLists;
 using AmeisenBotRevamped.Utils;
-using TrashMemCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using TrashMemCore.Objects;
-using Fasm;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using TrashMemCore;
+using TrashMemCore.Objects;
 
 namespace AmeisenBotRevamped.ActionExecutors
 {
@@ -166,12 +165,17 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(command);
                 MemoryAllocation memAlloc = TrashMem.AllocateMemory(bytes.Length + 1);
-                if (memAlloc == null) return;
+                if (memAlloc == null)
+                {
+                    return;
+                }
 
                 TrashMem.WriteBytes(memAlloc.Address, bytes);
 
                 if (memAlloc.Address == 0)
+                {
                     return;
+                }
 
                 string[] asm = new string[]
                 {
@@ -196,7 +200,10 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(variable);
                 MemoryAllocation memAlloc = TrashMem.AllocateMemory(bytes.Length + 1);
-                if (memAlloc == null) return "";
+                if (memAlloc == null)
+                {
+                    return "";
+                }
 
                 TrashMem.WriteBytes(memAlloc.Address, bytes);
 
@@ -328,13 +335,24 @@ namespace AmeisenBotRevamped.ActionExecutors
                     TrashMem.WriteBytes(EndsceneAddress, originalEndsceneBytes);
 
                     if (CodecaveForCheck != null)
+                    {
                         TrashMem.FreeMemory(CodecaveForCheck);
+                    }
+
                     if (CodecaveForExecution != null)
+                    {
                         TrashMem.FreeMemory(CodecaveForExecution);
+                    }
+
                     if (CodeToExecuteAddress != null)
+                    {
                         TrashMem.FreeMemory(CodeToExecuteAddress);
+                    }
+
                     if (ReturnValueAddress != null)
+                    {
                         TrashMem.FreeMemory(ReturnValueAddress);
+                    }
                 }
             }
             catch { }
@@ -360,8 +378,18 @@ namespace AmeisenBotRevamped.ActionExecutors
 
             try
             {
+                int timeoutCounter = 0;
                 // wait for the code to be executed
-                while (IsInjectionUsed) { Thread.Sleep(1); }
+                while (IsInjectionUsed)
+                {
+                    if (timeoutCounter == 500)
+                    {
+                        return null;
+                    }
+
+                    timeoutCounter++;
+                    Thread.Sleep(1);
+                }
 
                 IsInjectionUsed = true;
                 // preparing to inject the given ASM
@@ -378,8 +406,19 @@ namespace AmeisenBotRevamped.ActionExecutors
                 //byte[] asmBytes = TrashMem.Asm.Assemble();
                 TrashMem.Asm.Inject(CodecaveForExecution.Address);
 
+                timeoutCounter = 0;
                 // wait for the code to be executed
-                while (TrashMem.ReadInt32(CodeToExecuteAddress.Address) > 0) { Thread.Sleep(1); }
+                while (TrashMem.ReadInt32(CodeToExecuteAddress.Address) > 0)
+                {
+                    if (timeoutCounter == 500)
+                    {
+                        return null;
+                    }
+
+                    timeoutCounter++;
+                    IsInjectionUsed = false;
+                    Thread.Sleep(1);
+                }
 
                 // if we want to read the return value do it otherwise we're done
                 if (readReturnBytes)

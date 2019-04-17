@@ -14,12 +14,16 @@
         <Label Content="🤖" HorizontalAlignment="Left" Margin="0,-4,0,0" VerticalAlignment="Top" Foreground="White" FontSize="16"/>
         <Label x:Name="labelWindowTitle" Content="AmeisenBot" HorizontalAlignment="Left" Margin="26,-2,0,0" VerticalAlignment="Top" Foreground="#FFDEDEDE" Background="{x:Null}" FontSize="14"/>
         <WrapPanel FlowDirection="RightToLeft" Background="#FF3C3C3C" Height="20" VerticalAlignment="Bottom" Margin="0,0,22,0">
-            <Button x:Name="buttonToggleFleet" Style="{StaticResource CustomButtonStyle}" Content="Fleet-Mode OFF" VerticalAlignment="Top" Height="20" BorderBrush="#FF171717" Background="#FF3C3C3C" Click="ButtonToggleFleet_Click" HorizontalAlignment="Left" Width="100" Padding="1" UseLayoutRounding="False" BorderThickness="1" Foreground="White"/>
+            <Button x:Name="buttonToggleFleet" Style="{StaticResource CustomButtonStyle}" Content="Fleet-Mode OFF" VerticalAlignment="Top" Height="20" BorderBrush="#FF0080FF" Background="#FF4B4B4B" Click="ButtonToggleFleet_Click" HorizontalAlignment="Left" Width="100" Padding="1" UseLayoutRounding="False" BorderThickness="1" Foreground="White"/>
+            <Label x:Name="labelActiveWatchdogs" Content="0" Background="{x:Null}" Foreground="#FF0080FF" Padding="12,0,0,0" VerticalContentAlignment="Center"/>
+            <Label Content="ActiveWatchdogs" Background="{x:Null}" Foreground="White" Padding="8,0,0,0" VerticalContentAlignment="Center"/>
+            <Label x:Name="labelActiveBotThreads" Content="0" Background="{x:Null}" Foreground="#FF0080FF" Padding="12,0,0,0" VerticalContentAlignment="Center"/>
+            <Label Content="ActiveBotThreads" Background="{x:Null}" Foreground="White" Padding="8,0,0,0" VerticalContentAlignment="Center"/>
         </WrapPanel>
-        <WrapPanel HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="599" Margin="125,0,0,0" FlowDirection="RightToLeft">
+        <WrapPanel Height="26" VerticalAlignment="Top" Margin="125,0,0,0" FlowDirection="RightToLeft">
             <Button x:Name="buttonClose" Style="{StaticResource CustomButtonStyle}" Content="X" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonClose_Click" FontSize="14"/>
             <Button x:Name="buttonMinimize" Style="{StaticResource CustomButtonStyle}" Content="_" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonMinimize_Click" FontSize="14"/>
-            <Button x:Name="buttonSettings" Style="{StaticResource CustomButtonStyle}" Content="🔧" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" FontSize="14" Click="ButtonSettings_Click" RenderTransformOrigin="1.032,0.515"/>
+            <Button x:Name="buttonSettings" Style="{StaticResource CustomButtonStyle}" Content="⚙" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonSettings_Click" RenderTransformOrigin="1.032,0.515"/>
             <Button x:Name="buttonRefresh" Style="{StaticResource CustomButtonStyle}" Content="↻" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonRefresh_Click" FontSize="14"/>
         </WrapPanel>
     </Grid>

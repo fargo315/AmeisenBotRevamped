@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using AmeisenBotRevamped.Gui.BotManager.Objects;
+using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using System;
@@ -24,13 +25,13 @@ namespace AmeisenBotRevamped.Gui
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        private List<AmeisenBot> AmeisenBots { get; }
+        private List<ManagedAmeisenBot> AmeisenBots { get; }
         public Settings Settings { get; }
         public Timer ViewUpdateTimer { get; private set; }
 
         public AmeisenBot SelectedBot => (AmeisenBot)listboxBots.SelectedItem;
 
-        public SettingsWindow(Settings activeSettings, List<AmeisenBot> ameisenBots)
+        public SettingsWindow(Settings activeSettings, List<ManagedAmeisenBot> ameisenBots)
         {
             Settings = activeSettings;
             AmeisenBots = ameisenBots;
@@ -39,7 +40,7 @@ namespace AmeisenBotRevamped.Gui
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            foreach (AmeisenBot ameisenBot in AmeisenBots)
+            foreach (ManagedAmeisenBot ameisenBot in AmeisenBots)
             {
                 listboxBots.Items.Add(ameisenBot);
             }

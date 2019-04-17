@@ -1,24 +1,13 @@
-﻿using AmeisenBotRevamped.ActionExecutors;
-using AmeisenBotRevamped.Clients;
-using AmeisenBotRevamped.ObjectManager.WowObjects;
+﻿using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.Utils;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace AmeisenBotRevamped.Gui.Views
 {
@@ -29,9 +18,9 @@ namespace AmeisenBotRevamped.Gui.Views
     {
         public delegate void AttachBotFunction(AmeisenBot ameisenBot);
 
-        private AmeisenBot AmeisenBot { get; set; }
-        private AttachBotFunction AttachBotFunc { get; set; }
-        private Settings Settings { get; set; }
+        public AmeisenBot AmeisenBot { get; }
+        private AttachBotFunction AttachBotFunc { get; }
+        private Settings Settings { get; }
 
         public BotView(AmeisenBot ameisenBot, Settings settings, AttachBotFunction attachBotFunction)
         {
@@ -46,7 +35,10 @@ namespace AmeisenBotRevamped.Gui.Views
 
         public void UpdateView()
         {
-            if (AmeisenBot.WowDataAdapter.GameState == WowGameState.Crashed) return;
+            if (AmeisenBot.WowDataAdapter.GameState == WowGameState.Crashed)
+            {
+                return;
+            }
 
             if (AmeisenBot.Attached)
             {
@@ -66,9 +58,13 @@ namespace AmeisenBotRevamped.Gui.Views
             WowUnit target = (WowUnit)AmeisenBot.ObjectManager.GetWowObjectByGuid(targetGuid);
 
             if (AmeisenBot.CharacterName.Length == 0)
+            {
                 labelBotname.Content = "Not logged in";
+            }
             else
+            {
                 labelBotname.Content = AmeisenBot.CharacterName;
+            }
 
             labelBotrealm.Content = $"<{AmeisenBot.RealmName}>";
             labelBotmapinfo.Content = $"<{AmeisenBot.WowDataAdapter.ContinentName}> <{AmeisenBot.WowDataAdapter.MapId}, {AmeisenBot.WowDataAdapter.ZoneId}>";
@@ -76,30 +72,40 @@ namespace AmeisenBotRevamped.Gui.Views
             labelBotaccount.Content = $"<{AmeisenBot.WowDataAdapter.AccountName}>";
 
             if (AmeisenBot.StateMachine != null)
+            {
                 labelBotstate.Content = $"<{AmeisenBot.StateMachine.CurrentState.ToString()}>";
+            }
 
             if (player != null)
             {
                 labelBothealth.Content = $"Health: {BotUtils.BigValueToString(player.Health)}/{BotUtils.BigValueToString(player.MaxHealth)}";
 
                 if (player.MaxHealth > 0)
+                {
                     progressbarBothealth.Value = (player.Health / player.MaxHealth) * 100;
+                }
 
                 labelBotenergy.Content = $"Energy: {BotUtils.BigValueToString(player.Energy)}/{BotUtils.BigValueToString(player.MaxEnergy)}";
 
                 if (player.MaxEnergy > 0)
+                {
                     progressbarBotenergy.Value = (player.Energy / player.MaxEnergy) * 100;
+                }
 
                 labelBotexp.Content = $"Exp: {BotUtils.BigValueToString(player.Exp)}/{BotUtils.BigValueToString(player.MaxExp)}";
 
                 if (player.MaxExp > 0)
+                {
                     progressbarBotexp.Value = (player.Exp / player.MaxExp) * 100;
+                }
 
                 labelBotlevel.Content = $"lvl. {player.Level}";
                 labelBotraceclass.Content = $"<{player.Race.ToString()}, {player.Class.ToString()}>";
 
                 if (target != null)
+                {
                     labelBotdebug.Content = $"0x{target.BaseAddress.ToString("X")}";
+                }
 
                 BitmapImage botBitmap = SearchForBotPicture();
                 if (botBitmap != null)
