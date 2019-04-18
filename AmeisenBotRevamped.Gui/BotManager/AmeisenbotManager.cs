@@ -142,9 +142,9 @@ namespace AmeisenBotRevamped.Gui.BotManager
                             else // otherwise just add a watchdog
                             {
                                 SetupAmeisenBotThread(
-                                    wowAccount, 
-                                    UnmanagedAmeisenBots.First(u => u.CharacterName == wowAccount.CharacterName), 
-                                    out Thread ameisenbotThread, 
+                                    wowAccount,
+                                    UnmanagedAmeisenBots.First(u => u.CharacterName == wowAccount.CharacterName),
+                                    out Thread ameisenbotThread,
                                     out ManagedAmeisenBot managedAmeisenBot);
 
                                 // start the watchdog that will restart the wow when it crashed

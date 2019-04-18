@@ -6,11 +6,11 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 {
     public class BotStateCombat : BotState
     {
-        private AmeisenBotStateMachine StateMachine { get; set; }
+        private AmeisenBotStateMachine StateMachine { get; }
         private ICombatEngine CombatEngine { get; set; }
 
-        private IMovementProvider MovementProvider { get; set; }
-        private ISpellStrategy SpellStrategy { get; set; }
+        private IMovementProvider MovementProvider { get; }
+        private ISpellStrategy SpellStrategy { get; }
 
         public BotStateCombat(AmeisenBotStateMachine stateMachine)
         {

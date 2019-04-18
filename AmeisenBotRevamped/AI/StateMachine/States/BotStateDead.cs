@@ -8,7 +8,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 {
     public class BotStateDead : BotState
     {
-        AmeisenBotStateMachine StateMachine { get; set; }
+        private AmeisenBotStateMachine StateMachine { get; }
 
         public BotStateDead(AmeisenBotStateMachine stateMachine)
         {
@@ -17,17 +17,14 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 
         public override void Execute()
         {
-
         }
 
         public override void Exit()
         {
-
         }
 
         public override void Start()
         {
-
         }
 
         public override string ToString() => "Dead";

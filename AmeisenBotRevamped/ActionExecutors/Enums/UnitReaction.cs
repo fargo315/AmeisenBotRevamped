@@ -2,12 +2,12 @@
 {
     public enum UnitReaction
     {
-        Friendly = 4,
-        Neutral = 3,
-        Unknown = 2,
-        Hostile = 1,
-        HostileGuard = 0,
+        Wtf = -2,
         Trash = -1,
-        Wtf = -2
+        HostileGuard = 0,
+        Hostile = 1,
+        Unknown = 2,
+        Neutral = 3,
+        Friendly = 4
     }
 }

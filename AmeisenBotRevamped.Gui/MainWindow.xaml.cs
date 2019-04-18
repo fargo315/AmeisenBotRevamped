@@ -27,7 +27,7 @@ namespace AmeisenBotRevamped.Gui
         private readonly object botViewsLock = new object();
         private static readonly string SettingsPath = AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
-        private List<AmeisenBot> UnmanagedAmeisenBots { get; set; }
+        private List<AmeisenBot> UnmanagedAmeisenBots { get; }
         private List<BotView> BotViews { get; set; }
 
         private Timer ViewUpdateTimer { get; }
@@ -87,7 +87,6 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
         {
-
         }
 
         private void ButtonToggleFleet_Click(object sender, RoutedEventArgs e)
@@ -221,6 +220,11 @@ namespace AmeisenBotRevamped.Gui
 
             Settings = settingsWindow.Settings;
             SaveSetings();
+        }
+
+        private void ButtonDebugWindow_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

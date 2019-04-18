@@ -73,7 +73,7 @@ namespace AmeisenBotRevamped.Gui.Views
 
             if (AmeisenBot.StateMachine != null)
             {
-                labelBotstate.Content = $"<{AmeisenBot.StateMachine.CurrentState.ToString()}>";
+                labelBotstate.Content = $"<{AmeisenBot.StateMachine.CurrentState}>";
             }
 
             if (player != null)

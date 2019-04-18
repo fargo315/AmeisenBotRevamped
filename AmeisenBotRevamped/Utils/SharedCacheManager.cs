@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace AmeisenBotRevamped.Utils
 {
-    public class SharedCacheManager
+    public sealed class SharedCacheManager
     {
         private static readonly object padlock = new object();
 
         private static SharedCacheManager instance;
+
         public static SharedCacheManager Instance
         {
             get
@@ -25,9 +26,9 @@ namespace AmeisenBotRevamped.Utils
             }
         }
 
-        public Dictionary<ulong, string> PlayerNameCache { get; private set; }
-        public Dictionary<ulong, string> UnitNameCache { get; private set; }
-        public Dictionary<(int, int), UnitReaction> ReactionCache { get; private set; }
+        public Dictionary<ulong, string> PlayerNameCache { get; }
+        public Dictionary<ulong, string> UnitNameCache { get; }
+        public Dictionary<(int, int), UnitReaction> ReactionCache { get; }
 
         private SharedCacheManager()
         {

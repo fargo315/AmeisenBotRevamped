@@ -28,8 +28,8 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
 
         private List<Spell> Spells { get; set; }
 
-        private IWowDataAdapter WowDataAdapter { get; set; }
-        private IWowActionExecutor WowActionExecutor { get; set; }
+        private IWowDataAdapter WowDataAdapter { get; }
+        private IWowActionExecutor WowActionExecutor { get; }
 
         public WarriorFury(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor, List<Spell> spells)
         {
@@ -175,7 +175,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
 
         private Spell TryUseSpell(string spellname, WowUnit player)
         {
-            Spell spellToUse = Spells.Where(spell => spell.name == spellname).FirstOrDefault();
+            Spell spellToUse = Spells.Find(spell => spell.name == spellname);
 
             if (spellToUse == null) { return null; }
             if (player.Energy < spellToUse.costs) { return null; }
@@ -192,20 +192,20 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
         {
             Spells = spells;
 
-            IsSlamKnown = Spells.Where(spell => spell.name == "Slam").Count() > 0;
-            IsBloodthirstKnown = Spells.Where(spell => spell.name == "Bloodthirst").Count() > 0;
-            IsWhirlwindKnown = Spells.Where(spell => spell.name == "Whirlwind").Count() > 0;
-            IsBerserkerRageKnown = Spells.Where(spell => spell.name == "Berserker Rage").Count() > 0;
-            IsHeroicStrikeKnown = Spells.Where(spell => spell.name == "Heroic Strike").Count() > 0;
-            IsHeroicThrowKnown = Spells.Where(spell => spell.name == "Heroic Throw").Count() > 0;
-            IsExecuteKnown = Spells.Where(spell => spell.name == "Execute").Count() > 0;
-            IsRecklessnessKnown = Spells.Where(spell => spell.name == "Recklessness").Count() > 0;
-            IsDeathWishKnown = Spells.Where(spell => spell.name == "Death Wish").Count() > 0;
-            IsEnragedRegenerationKnown = Spells.Where(spell => spell.name == "Enraged Regeneration").Count() > 0;
-            IsInterceptKnown = Spells.Where(spell => spell.name == "Intercept").Count() > 0;
-            IsHamstringKnown = Spells.Where(spell => spell.name == "Hamstring").Count() > 0;
-            IsBattleShoutKnown = Spells.Where(spell => spell.name == "Battle Shout").Count() > 0;
-            IsBerserkerStanceKnown = Spells.Where(spell => spell.name == "Berserker Stance").Count() > 0;
+            IsSlamKnown = Spells.Any(spell => spell.name == "Slam");
+            IsBloodthirstKnown = Spells.Any(spell => spell.name == "Bloodthirst");
+            IsWhirlwindKnown = Spells.Any(spell => spell.name == "Whirlwind");
+            IsBerserkerRageKnown = Spells.Any(spell => spell.name == "Berserker Rage");
+            IsHeroicStrikeKnown = Spells.Any(spell => spell.name == "Heroic Strike");
+            IsHeroicThrowKnown = Spells.Any(spell => spell.name == "Heroic Throw");
+            IsExecuteKnown = Spells.Any(spell => spell.name == "Execute");
+            IsRecklessnessKnown = Spells.Any(spell => spell.name == "Recklessness");
+            IsDeathWishKnown = Spells.Any(spell => spell.name == "Death Wish");
+            IsEnragedRegenerationKnown = Spells.Any(spell => spell.name == "Enraged Regeneration");
+            IsInterceptKnown = Spells.Any(spell => spell.name == "Intercept");
+            IsHamstringKnown = Spells.Any(spell => spell.name == "Hamstring");
+            IsBattleShoutKnown = Spells.Any(spell => spell.name == "Battle Shout");
+            IsBerserkerStanceKnown = Spells.Any(spell => spell.name == "Berserker Stance");
         }
     }
 }

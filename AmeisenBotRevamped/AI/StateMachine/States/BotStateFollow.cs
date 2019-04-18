@@ -13,7 +13,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
     {
         public WowUnit UnitToFollow { get; set; }
 
-        private AmeisenBotStateMachine StateMachine { get; set; }
+        private AmeisenBotStateMachine StateMachine { get; }
         private Queue<WowPosition> CurrentPath { get; set; }
 
         public WowPosition ActiveTargetPosition { get; private set; }
@@ -105,13 +105,13 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             foreach (Vector3 pos in waypoints)
             {
                 WowPosition wpos = new WowPosition(pos);
-                if ((pos.X != myPosAsVector.X && pos.Y != myPosAsVector.Y && pos.Z != myPosAsVector.Z) && !CurrentPath.Contains(wpos))
+                if (pos.X != myPosAsVector.X && pos.Y != myPosAsVector.Y && pos.Z != myPosAsVector.Z && !CurrentPath.Contains(wpos))
                 {
                     CurrentPath.Enqueue(wpos);
                 }
             }
 
-            if ((targetPosAsVector.X != myPosAsVector.X && targetPosAsVector.Y != myPosAsVector.Y && targetPosAsVector.Z != myPosAsVector.Z))
+            if (targetPosAsVector.X != myPosAsVector.X && targetPosAsVector.Y != myPosAsVector.Y && targetPosAsVector.Z != myPosAsVector.Z)
             {
                 CurrentPath.Enqueue(new WowPosition(targetPosAsVector));
             }

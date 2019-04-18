@@ -20,11 +20,11 @@ namespace AmeisenBotRevamped.AI.CombatEngine
         public WowUnit ActiveTarget { get; private set; }
         public List<WowUnit> AvaiableTargets => WowDataAdapter.ObjectManager.WowUnits.Where(unit => unit.IsInCombat).ToList();
 
-        private IWowDataAdapter WowDataAdapter { get; set; }
-        private IWowActionExecutor WowActionExecutor { get; set; }
+        private IWowDataAdapter WowDataAdapter { get; }
+        private IWowActionExecutor WowActionExecutor { get; }
 
-        private IMovementProvider MovementProvider { get; set; }
-        private ISpellStrategy SpellStrategy { get; set; }
+        private IMovementProvider MovementProvider { get; }
+        private ISpellStrategy SpellStrategy { get; }
 
         private List<Spell> AvaiableSpells { get; set; }
 
@@ -47,7 +47,6 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
             WowPosition positionToMoveTo = MovementProvider?.GetPositionToMoveTo(WowDataAdapter.ActivePlayerPosition, WowDataAdapter.GetPosition(ActiveTarget.BaseAddress)) ?? new WowPosition();
             WowActionExecutor.MoveToPosition(positionToMoveTo);
-
 
             WowUnit player = (WowUnit)WowDataAdapter.ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
 
@@ -80,7 +79,6 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         public void Exit()
         {
-
         }
 
         private WowUnit SelectNewTarget()
@@ -111,13 +109,8 @@ namespace AmeisenBotRevamped.AI.CombatEngine
                 return false;
             }
 
-            if (activeTarget.Health > 0
-                || !activeTarget.IsDead)
-            {
-                return true;
-            }
-
-            return false;
+            return activeTarget.Health > 0
+                || !activeTarget.IsDead;
         }
 
         private List<Spell> ReadAvaiableSpells()
@@ -183,7 +176,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine
         private bool CastSpellByName(string spellName)
         {
             var spellMatches = AvaiableSpells.Where(spell => spell.name == spellName).OrderByDescending(spell => spell.rank);
-            if (spellMatches.Count() == 0)
+            if (!spellMatches.Any())
             {
                 return false;
             }
@@ -191,6 +184,6 @@ namespace AmeisenBotRevamped.AI.CombatEngine
             return CastSpell(spellMatches.First());
         }
 
-        private bool IsSpellKnown(string spellName) => AvaiableSpells.Where(spell => spell.name == spellName).Count() > 0;
+        private bool IsSpellKnown(string spellName) => AvaiableSpells.Any(spell => spell.name == spellName);
     }
 }

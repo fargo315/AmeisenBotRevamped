@@ -17,9 +17,9 @@ namespace AmeisenBotRevamped.ActionExecutors.Enums
         InteractObject = 0x7,
         FaceOther = 0x8,
         Skin = 0x9,
-        Attack = 0x10,
         AttackPos = 0xA,
         AttackGuid = 0xB,
+        Attack = 0x10,
         WalkAndRotate = 0x13
     }
 }

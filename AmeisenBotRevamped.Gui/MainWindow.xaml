@@ -25,6 +25,7 @@
             <Button x:Name="buttonMinimize" Style="{StaticResource CustomButtonStyle}" Content="_" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonMinimize_Click" FontSize="14"/>
             <Button x:Name="buttonSettings" Style="{StaticResource CustomButtonStyle}" Content="⚙" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonSettings_Click" RenderTransformOrigin="1.032,0.515"/>
             <Button x:Name="buttonRefresh" Style="{StaticResource CustomButtonStyle}" Content="↻" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonRefresh_Click" FontSize="14"/>
+            <Button x:Name="buttonDebugWindow" Style="{StaticResource CustomButtonStyle}" Content="🛠️" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonDebugWindow_Click" RenderTransformOrigin="1.032,0.515"/>
         </WrapPanel>
     </Grid>
 </Window>
