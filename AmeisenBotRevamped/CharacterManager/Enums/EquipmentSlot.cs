@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AmeisenBotRevamped.CharacterManager.Enums
 {
-    public enum EquipmentSlot : int
+    public enum EquipmentSlot
     {
         NOT_EQUIPABLE = -1,
         INVSLOT_AMMO = 0,

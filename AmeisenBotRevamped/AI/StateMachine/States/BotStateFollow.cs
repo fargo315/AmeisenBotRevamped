@@ -6,6 +6,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace AmeisenBotRevamped.AI.StateMachine.States
 {
@@ -70,18 +71,18 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             }
 
             double distanceTraveled = BotMath.GetDistance(myPosition, LastPosition);
-            AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X")}]\tDistance traveled {distanceTraveled}m", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tDistance traveled {distanceTraveled}m", LogLevel.Verbose);
 
             if (distanceTraveled > 0 && distanceTraveled < 0.1)
             {
-                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X")}]\tTrying to unstuck", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tTrying to unstuck", LogLevel.Verbose);
                 float newX = (float)Math.Cos(myPosition.r + (Math.PI / 2)) + 4 + myPosition.x;
                 float newY = (float)Math.Sin(myPosition.r + (Math.PI / 2)) + 4 + myPosition.y;
                 StateMachine.WowActionExecutor?.MoveToPosition(new WowPosition() { x = newX, y = newY, z = myPosition.z });
             }
             else if (distanceTraveled > 0 && distanceTraveled < 0.2)
             {
-                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X")}]\tTrying to jump", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tTrying to jump", LogLevel.Verbose);
                 StateMachine.WowActionExecutor?.Jump();
             }
 
@@ -99,7 +100,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             if (StateMachine.PathfindingClient != null)
             {
                 waypoints = StateMachine.PathfindingClient.GetPath(myPosAsVector, targetPosAsVector, StateMachine.WowDataAdapter.MapId);
-                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X")}]\tFound Path with {waypoints.Count} nodes", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tFound Path with {waypoints.Count} nodes", LogLevel.Verbose);
             }
 
             foreach (Vector3 pos in waypoints)
@@ -139,7 +140,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             UnitToFollow = StateMachine.FindUnitToFollow();
             CurrentPath = new Queue<WowPosition>();
 
-            AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor?.ProcessId.ToString("X")}]\tFollowing unit \"{UnitToFollow.Name}\"", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{StateMachine.WowActionExecutor?.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tFollowing unit \"{UnitToFollow.Name}\"", LogLevel.Verbose);
         }
 
         public override string ToString() => "Following";

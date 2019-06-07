@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AmeisenBotRevamped.ActionExecutors;
+﻿using AmeisenBotRevamped.ActionExecutors;
 using AmeisenBotRevamped.AI.CombatEngine.Objects;
 using AmeisenBotRevamped.DataAdapters;
 using AmeisenBotRevamped.ObjectManager.WowObjects;
 using AmeisenBotRevamped.Utils;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
 {
@@ -50,14 +50,12 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
             double targetDistance = BotMath.GetDistance(player.Position, activeTarget.Position);
 
             // if we are low on HP try to use Enraged Regeneration
-            /*if (player.HealthPercentage < 40)
+            if (player.Health / player.MaxHealth * 100 < 40
+                && IsEnragedRegenerationKnown)
             {
-                if (IsEnragedRegenerationKnown)
-                {
-                    spellToUse = TryUseSpell("Enraged Regeneration", player);
-                    if (spellToUse != null) { return spellToUse; }
-                }
-            }*/
+                spellToUse = TryUseSpell("Enraged Regeneration", player);
+                if (spellToUse != null) { return spellToUse; }
+            }
 
             // hold Berserker Rage on cooldown
             if (IsBerserkerRageKnown && !IsInMainCombo)
@@ -70,14 +68,12 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
             if (targetDistance < 3)
             {
                 // if we got enough rage and nothing better to do, use Heroic Strike
-                if (player.Energy > 50 && activeTarget.Health / activeTarget.MaxHealth * 100 > 15)
+                if (player.Energy > 50 && activeTarget.Health / activeTarget.MaxHealth * 100 > 15
+                    && IsHeroicStrikeKnown)
                 {
                     // Heroic Strike wont't interrupt main-combo
-                    if (IsHeroicStrikeKnown)
-                    {
-                        spellToUse = TryUseSpell("Heroic Strike", player);
-                        if (spellToUse != null) { return spellToUse; }
-                    }
+                    spellToUse = TryUseSpell("Heroic Strike", player);
+                    if (spellToUse != null) { return spellToUse; }
                 }
 
                 // if we are in our main-combo, use the second part of it, whirlwind
@@ -143,32 +139,28 @@ namespace AmeisenBotRevamped.AI.CombatEngine.SpellStrategies
                     if (spellToUse != null) { return spellToUse; }
                 }
 
-                if (player.Energy > 50)
+                if (!IsInMainCombo
+                    && player.Energy > 50
+                    && IsExecuteKnown
+                    && activeTarget.Health / activeTarget.MaxHealth * 100 < 15)
                 {
-                    if (IsExecuteKnown && activeTarget.Health / activeTarget.MaxHealth * 100 < 15 && !IsInMainCombo)
-                    {
-                        spellToUse = TryUseSpell("Execute", player);
-                        if (spellToUse != null) { return spellToUse; }
-                    }
+                    spellToUse = TryUseSpell("Execute", player);
+                    if (spellToUse != null) { return spellToUse; }
                 }
             }
-            else if (targetDistance > 8 && targetDistance < 25)
+            else if (targetDistance > 8 && targetDistance < 25
+                && IsInterceptKnown)
             {
                 // try to charge to our activeTarget
-                if (IsInterceptKnown)
-                {
-                    spellToUse = TryUseSpell("Intercept", player);
-                    if (spellToUse != null) { return spellToUse; }
-                }
+                spellToUse = TryUseSpell("Intercept", player);
+                if (spellToUse != null) { return spellToUse; }
             }
-            else if (targetDistance < 30)
+            else if (targetDistance < 30
+                && IsHeroicThrowKnown)
             {
                 // if there is really nothing other to do, throw something
-                if (IsHeroicThrowKnown)
-                {
-                    spellToUse = TryUseSpell("Heroic Throw", player);
-                    if (spellToUse != null) { return spellToUse; }
-                }
+                spellToUse = TryUseSpell("Heroic Throw", player);
+                if (spellToUse != null) { return spellToUse; }
             }
             return null;
         }

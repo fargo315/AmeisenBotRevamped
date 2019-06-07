@@ -24,7 +24,6 @@ namespace AmeisenBotRevamped.Gui
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly object botViewsLock = new object();
         private static readonly string SettingsPath = AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
         private List<AmeisenBot> UnmanagedAmeisenBots { get; }
@@ -47,7 +46,7 @@ namespace AmeisenBotRevamped.Gui
             AmeisenBotLogger.Instance.Start();
             AmeisenBotLogger.Instance.Log("AmeisenBotGui loading...");
 
-            OffsetList = new Wotlk335a12340OffsetList();
+            OffsetList = new Wotlk335A12340OffsetList();
 
             ViewUpdateTimer = new Timer(1000);
             ViewUpdateTimer.Elapsed += CUpdateViews;
@@ -74,7 +73,7 @@ namespace AmeisenBotRevamped.Gui
             }
 
             ViewUpdateTimer.Stop();
-            AmeisenBotManager.Dispose();
+            AmeisenBotManager.Shutdown();
 
             AmeisenBotLogger.Instance.Stop();
         }
@@ -87,6 +86,7 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
         {
+            // TODO
         }
 
         private void ButtonToggleFleet_Click(object sender, RoutedEventArgs e)
@@ -111,6 +111,8 @@ namespace AmeisenBotRevamped.Gui
         #region TimerCallbacks
         private void CUpdateViews(object sender, ElapsedEventArgs e)
         {
+            Dispatcher.Invoke(() => labelCurrentMemoryUsage.Content = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1000000);
+
             foreach (ManagedAmeisenBot bot in AmeisenBotManager.ManagedAmeisenBots)
             {
                 Dispatcher.Invoke(() => BotViews.Add(new BotView(
@@ -224,7 +226,7 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonDebugWindow_Click(object sender, RoutedEventArgs e)
         {
-
+            new DebugWindow().Show();
         }
     }
 }

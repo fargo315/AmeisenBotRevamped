@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmeisenBotRevamped.Gui"
         mc:Ignorable="d"
-        Title="DebugWindow" Height="360" Width="240" Background="#FF3C3C3C" ResizeMode="NoResize" WindowStyle="None" BorderThickness="0" AllowsTransparency="True" Loaded="Window_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown" >
+        Title="DebugWindow" Height="360" Width="240" Background="#FF3C3C3C" ResizeMode="NoResize" WindowStyle="None" BorderThickness="0" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown" >
     <Grid>
         <WrapPanel Height="26" VerticalAlignment="Top" FlowDirection="RightToLeft">
             <Button x:Name="buttonClose" Style="{StaticResource CustomButtonStyle}" Content="X" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonClose_Click" FontSize="14"/>

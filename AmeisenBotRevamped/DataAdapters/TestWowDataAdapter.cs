@@ -18,7 +18,7 @@ namespace AmeisenBotRevamped.DataAdapters
 
         public BasicInfoDataSet BasicInfoDataSet => new BasicInfoDataSet() { CharacterName = "TCharacter", RealmName = "TRealm" };
 
-        public WowObjectManager ObjectManager { get; private set; }
+        public WowObjectManager ObjectManager { get; }
 
         public bool IsWorldLoaded { get; set; }
 
@@ -154,12 +154,12 @@ namespace AmeisenBotRevamped.DataAdapters
 
         public void StartObjectUpdates()
         {
-
+            // Empty for tests
         }
 
         public void StopObjectUpdates()
         {
-
+            // Empty for tests
         }
 
         public WowPosition GetPosition(uint baseAddress)

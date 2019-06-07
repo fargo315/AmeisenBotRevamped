@@ -14,6 +14,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using TrashMemCore;
 
 namespace AmeisenBotRevamped
@@ -48,7 +49,7 @@ namespace AmeisenBotRevamped
             WowDataAdapter.OnGamestateChanged = COnGamestateChanged;
             TrashMem = trashMem;
 
-            AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X")}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
+            AmeisenBotLogger.Instance.Log($"[{process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tAmeisenBot initialised [{wowDataAdapter?.AccountName}, {CharacterName}, {RealmName}, {wowDataAdapter?.WowBuild}]");
         }
 
         public void Attach(IWowActionExecutor wowActionExecutor, IPathfindingClient wowPathfindingClient, IWowEventAdapter wowEventAdapter, IMovementProvider movementProvider, ISpellStrategy spellStrategy, IItemComparator itemComparator = null)
@@ -62,15 +63,15 @@ namespace AmeisenBotRevamped
             }
 
             WowDataAdapter?.StartObjectUpdates();
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted ObjectUpdates...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted ObjectUpdates...");
 
             WowActionExecutor = wowActionExecutor;
             WowActionExecutor.IsWorldLoaded = true;
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted ActionExecutor...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted ActionExecutor...");
 
             WowEventAdapter = wowEventAdapter;
             WowEventAdapter?.Start();
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted EventAdapter...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted EventAdapter...");
 
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
             WowEventAdapter?.Subscribe(WowEvents.LOOT_OPENED, OnLootWindowOpened);
@@ -85,15 +86,15 @@ namespace AmeisenBotRevamped
 
             StateMachine = new AmeisenBotStateMachine(WowDataAdapter, WowActionExecutor, WowPathfindingClient, movementProvider, spellStrategy);
             StateMachine?.Start();
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted StateMachine...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted StateMachine...");
 
             CharacterManager = new WowCharacterManager(WowDataAdapter, WowActionExecutor, itemComparator);
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tStarted CharacterManager...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted CharacterManager...");
 
             CharacterManager?.UpdateFullCharacter();
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tUpdated Character...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tUpdated Character...");
 
-            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X")}]\tAmeisenBot attached...");
+            AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tAmeisenBot attached...");
         }
 
         private void OnCombatLogEvent(long timestamp, List<string> args)

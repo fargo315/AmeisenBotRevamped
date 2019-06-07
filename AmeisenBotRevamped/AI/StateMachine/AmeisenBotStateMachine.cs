@@ -11,6 +11,7 @@ using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using AmeisenBotRevamped.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Timers;
 
 namespace AmeisenBotRevamped.AI.StateMachine
@@ -77,13 +78,13 @@ namespace AmeisenBotRevamped.AI.StateMachine
             }
             catch (Exception ex)
             {
-                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tCrash at StateMachine: \n{ex}");
+                AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tCrash at StateMachine: \n{ex}");
             }
         }
 
         public void SwitchState(Type newType)
         {
-            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X")}]\tSwitching state from \"{CurrentState}\" => \"{BotStates[newType]}\"");
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tSwitching state from \"{CurrentState}\" => \"{BotStates[newType]}\"");
             CurrentState.Exit();
             CurrentState = BotStates[newType];
             CurrentState.Start();
@@ -104,20 +105,13 @@ namespace AmeisenBotRevamped.AI.StateMachine
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
             WowPosition myPosition = wowPlayer.Position;
 
-            if (wowPlayer == null || unitToFollow == null)
+            if (wowPlayer != null && unitToFollow != null)
             {
-                return false;
-            }
-
-            double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
-
-            if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
-            {
-                return distance >= UnitFollowThreshold;
+                return BotMath.GetDistance(myPosition, unitToFollow.Position) >= UnitFollowThreshold;
             }
             else
             {
-                return distance >= UnitFollowThreshold;
+                return false;
             }
         }
 
@@ -126,20 +120,20 @@ namespace AmeisenBotRevamped.AI.StateMachine
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
             WowPosition myPosition = wowPlayer.Position;
 
-            if (wowPlayer == null || unitToFollow == null)
+            if (wowPlayer != null && unitToFollow != null)
             {
-                return false;
-            }
-
-            double distance = BotMath.GetDistance(myPosition, unitToFollow.Position);
-
-            if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
-            {
-                return distance <= UnitFollowThresholdLeaderMax;
+                if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
+                {
+                    return BotMath.GetDistance(myPosition, unitToFollow.Position) <= UnitFollowThresholdLeaderMax;
+                }
+                else
+                {
+                    return BotMath.GetDistance(myPosition, unitToFollow.Position) <= UnitFollowThresholdMax;
+                }
             }
             else
             {
-                return distance <= UnitFollowThresholdMax;
+                return false;
             }
         }
 
@@ -172,14 +166,11 @@ namespace AmeisenBotRevamped.AI.StateMachine
 
         public bool IsPartyInCombat()
         {
-            foreach (WowUnit unit in ObjectManager.WowUnits)
+            foreach (WowUnit unit in ObjectManager.GetWowUnits())
             {
-                if (WowDataAdapter.PartymemberGuids.Contains(unit.Guid))
+                if (WowDataAdapter.PartymemberGuids.Contains(unit.Guid) && unit.IsInCombat)
                 {
-                    if (unit.IsInCombat)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 

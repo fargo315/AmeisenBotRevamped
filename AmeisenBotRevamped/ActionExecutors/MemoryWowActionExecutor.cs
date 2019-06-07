@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -160,7 +161,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public void LuaDoString(string command)
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tExecuting Lua \"{command}\"", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tExecuting Lua \"{command}\"", LogLevel.Verbose);
             if (command.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(command);
@@ -195,7 +196,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public string GetLocalizedText(string variable)
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tReading Lua variable \"{variable}\"", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tReading Lua variable \"{variable}\"", LogLevel.Verbose);
             if (variable.Length > 0)
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(variable);
@@ -238,14 +239,11 @@ namespace AmeisenBotRevamped.ActionExecutors
             // if WoW is now/was unhooked, hook it
             if (!IsWoWHooked)
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tHooking EndScene at \"0x{EndsceneAddress.ToString("X")}\"", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tHooking EndScene at \"0x{EndsceneAddress.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}\"", LogLevel.Verbose);
 
                 // the address that we will return to after 
                 // the jump wer'e going to inject
                 EndsceneReturnAddress = EndsceneAddress + 0x5;
-
-                // read our original EndScene
-                //OriginalEndsceneBytes = TrashMem.ReadChars(EndsceneAddress, 5);
 
                 // integer to check if there is code waiting to be executed
                 CodeToExecuteAddress = TrashMem.AllocateMemory(4);
@@ -257,10 +255,10 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // codecave to check if we need to execute something
                 CodecaveForCheck = TrashMem.AllocateMemory(128);
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCCheck is at \"0x{CodecaveForCheck.Address.ToString("X")}\"", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCCCheck is at \"0x{CodecaveForCheck.Address.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
-                CodecaveForExecution = TrashMem.AllocateMemory(4096);
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCCExecution is at \"0x{CodecaveForExecution.Address.ToString("X")}\"", LogLevel.Verbose);
+                CodecaveForExecution = TrashMem.AllocateMemory(4096 * 8);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCCExecution is at \"0x{CodecaveForExecution.Address.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}\"", LogLevel.Verbose);
 
                 TrashMem.Asm.Clear();
                 // save registers
@@ -308,7 +306,6 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // return to original function after we're done with our stuff
                 TrashMem.Asm.AddLine($"JMP {EndsceneReturnAddress}");
-                //byte[] asmBytes2 = TrashMem.Asm.Assemble();
                 TrashMem.Asm.Inject(CodecaveForCheck.Address + (uint)asmLenght + 5);
                 TrashMem.Asm.Clear();
                 // ---------------------------------------------------
@@ -318,44 +315,39 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 // modify original EndScene instructions to start the hook
                 TrashMem.Asm.AddLine($"JMP {CodecaveForCheck.Address}");
-                //byte[] asmBytes3 = TrashMem.Asm.Assemble();
                 TrashMem.Asm.Inject(EndsceneAddress);
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
                 // we should've hooked WoW now
             }
         }
 
         private void DisposeHook()
         {
-            try
+            if (IsWoWHooked)
             {
-                if (IsWoWHooked)
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tDisposing Hook", LogLevel.Verbose);
+                TrashMem.WriteBytes(EndsceneAddress, originalEndsceneBytes);
+
+                if (CodecaveForCheck != null)
                 {
-                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDisposing Hook", LogLevel.Verbose);
-                    TrashMem.WriteBytes(EndsceneAddress, originalEndsceneBytes);
+                    TrashMem.FreeMemory(CodecaveForCheck);
+                }
 
-                    if (CodecaveForCheck != null)
-                    {
-                        TrashMem.FreeMemory(CodecaveForCheck);
-                    }
+                if (CodecaveForExecution != null)
+                {
+                    TrashMem.FreeMemory(CodecaveForExecution);
+                }
 
-                    if (CodecaveForExecution != null)
-                    {
-                        TrashMem.FreeMemory(CodecaveForExecution);
-                    }
+                if (CodeToExecuteAddress != null)
+                {
+                    TrashMem.FreeMemory(CodeToExecuteAddress);
+                }
 
-                    if (CodeToExecuteAddress != null)
-                    {
-                        TrashMem.FreeMemory(CodeToExecuteAddress);
-                    }
-
-                    if (ReturnValueAddress != null)
-                    {
-                        TrashMem.FreeMemory(ReturnValueAddress);
-                    }
+                if (ReturnValueAddress != null)
+                {
+                    TrashMem.FreeMemory(ReturnValueAddress);
                 }
             }
-            catch { }
         }
 
         private uint GetEndScene()
@@ -368,7 +360,7 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public byte[] InjectAndExecute(string[] asm, bool readReturnBytes, [CallerMemberName]string callingFunction = "")
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tInjecting ASM into Hook [asm = {JsonConvert.SerializeObject(asm)}, readReturnBytes = {readReturnBytes}, callingFunction = {callingFunction}]", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tInjecting ASM into Hook [asm = {JsonConvert.SerializeObject(asm)}, readReturnBytes = {readReturnBytes}, callingFunction = {callingFunction}]", LogLevel.Verbose);
             List<byte> returnBytes = new List<byte>();
 
             if (!IsWorldLoaded)
@@ -384,7 +376,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 {
                     if (timeoutCounter == 500)
                     {
-                        return null;
+                        return Array.Empty<byte>();
                     }
 
                     timeoutCounter++;
@@ -403,7 +395,6 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // now there is code to be executed
                 TrashMem.Write(CodeToExecuteAddress.Address, 1);
                 // inject it
-                //byte[] asmBytes = TrashMem.Asm.Assemble();
                 TrashMem.Asm.Inject(CodecaveForExecution.Address);
 
                 timeoutCounter = 0;
@@ -412,7 +403,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 {
                     if (timeoutCounter == 500)
                     {
-                        return null;
+                        return Array.Empty<byte>();
                     }
 
                     timeoutCounter++;
@@ -423,7 +414,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // if we want to read the return value do it otherwise we're done
                 if (readReturnBytes)
                 {
-                    byte buffer = new byte();
+                    byte buffer;
                     try
                     {
                         uint dwAddress = TrashMem.ReadUnmanaged<uint>(ReturnValueAddress.Address);
@@ -439,14 +430,14 @@ namespace AmeisenBotRevamped.ActionExecutors
                     }
                     catch (Exception e)
                     {
-                        AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at reading the return bytes: \n{e}", LogLevel.Error);
+                        AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCrash at reading the return bytes: \n{e}", LogLevel.Error);
                     }
                 }
                 IsInjectionUsed = false;
             }
             catch (Exception e)
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCrash at injecting: \n{e}", LogLevel.Error);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCrash at injecting: \n{e}", LogLevel.Error);
                 // now there is no more code to be executed
                 TrashMem.ReadUnmanaged<uint>(CodeToExecuteAddress.Address, 0);
                 IsInjectionUsed = false;
@@ -487,12 +478,12 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public UnitReaction GetUnitReaction(WowUnit wowUnitA, WowUnit wowUnitB)
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tGetting relation of: {wowUnitA.Name} to {wowUnitB.Name}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tGetting relation of: {wowUnitA.Name} to {wowUnitB.Name}", LogLevel.Verbose);
             UnitReaction reaction = UnitReaction.Unknown;
 
             if (SharedCacheManager.Instance.ReactionCache.ContainsKey((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)))
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCached relation of: {wowUnitA.Name} to {wowUnitB.Name} is {SharedCacheManager.Instance.ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)].ToString()}", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCached relation of: {wowUnitA.Name} to {wowUnitB.Name} is {SharedCacheManager.Instance.ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)].ToString()}", LogLevel.Verbose);
                 return SharedCacheManager.Instance.ReactionCache[(wowUnitA.FactionTemplate, wowUnitB.FactionTemplate)];
             }
 
@@ -509,33 +500,26 @@ namespace AmeisenBotRevamped.ActionExecutors
                 "RETN",
             };
 
-            /*if (reactionBytes.Length == 0)
-            {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is UnitReaction.Unknown", LogLevel.Verbose);
-                return UnitReaction.Unknown;
-            }*/
-
             // we need this, to be very accurate, otherwise wow will crash
             wowUnitA.UnitFlags = TrashMem.ReadStruct<BitVector32>(wowUnitA.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags);
             wowUnitB.UnitFlags = TrashMem.ReadStruct<BitVector32>(wowUnitB.DescriptorAddress + OffsetList.DescriptorOffsetUnitFlags);
+
             if (wowUnitA.IsDead || wowUnitB.IsDead)
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tCan't get relation, {(wowUnitA.IsDead ? "UnitA is dead..." : "UnitB is dead...")}", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCan't get relation, {(wowUnitA.IsDead ? "UnitA is dead..." : "UnitB is dead...")}", LogLevel.Verbose);
                 return reaction;
             }
 
             try
             {
-                byte[] reactionBytes = InjectAndExecute(asm, true);
+                InjectAndExecute(asm, true);
                 reaction = (UnitReaction)TrashMem.ReadInt32(memAlloc.Address);
-
-                //reaction = (UnitReaction)BitConverter.ToInt32(reactionBytes, 0);
 
                 SharedCacheManager.Instance.ReactionCache.Add((wowUnitA.FactionTemplate, wowUnitB.FactionTemplate), reaction);
             }
             catch
             {
-                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tFailed to read relation of: {wowUnitA.Name} to {wowUnitB.Name} is Unknown", LogLevel.Verbose);
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tFailed to read relation of: {wowUnitA.Name} to {wowUnitB.Name} is Unknown", LogLevel.Verbose);
                 return reaction;
             }
             finally
@@ -543,13 +527,13 @@ namespace AmeisenBotRevamped.ActionExecutors
                 TrashMem.FreeMemory(memAlloc);
             }
 
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is {reaction.ToString()}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tRelation of: {wowUnitA.Name} to {wowUnitB.Name} is {reaction.ToString()}", LogLevel.Verbose);
             return reaction;
         }
 
         public void RightClickUnit(WowUnit wowUnit)
         {
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tDoing RightClick: {wowUnit.Name}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tDoing RightClick: {wowUnit.Name}", LogLevel.Verbose);
             string[] asm = new string[]
             {
                 $"MOV ECX, {wowUnit.BaseAddress}",

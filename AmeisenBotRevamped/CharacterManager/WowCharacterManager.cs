@@ -21,20 +21,75 @@ namespace AmeisenBotRevamped.CharacterManager
         public Dictionary<EquipmentSlot, IItem> CurrentEquipment { get; }
         public List<IItem> InventoryItems { get; }
 
-        public List<ArmorItem> Armor => InventoryItems.OfType<ArmorItem>().ToList();
-        public List<ConsumableItem> Consumables => InventoryItems.OfType<ConsumableItem>().ToList();
-        public List<ContainerItem> Containers => InventoryItems.OfType<ContainerItem>().ToList();
-        public List<GemItem> Gems => InventoryItems.OfType<GemItem>().ToList();
-        public List<KeyItem> Keys => InventoryItems.OfType<KeyItem>().ToList();
-        public List<MiscellaneousItem> MiscellaneousItems => InventoryItems.OfType<MiscellaneousItem>().ToList();
-        public List<MoneyItem> MoneyItems => InventoryItems.OfType<MoneyItem>().ToList();
-        public List<ProjectileItem> Projectiles => InventoryItems.OfType<ProjectileItem>().ToList();
-        public List<QuestItem> QuestItems => InventoryItems.OfType<QuestItem>().ToList();
-        public List<QuiverItem> Quivers => InventoryItems.OfType<QuiverItem>().ToList();
-        public List<ReagentItem> Reagents => InventoryItems.OfType<ReagentItem>().ToList();
-        public List<RecipeItem> Recipes => InventoryItems.OfType<RecipeItem>().ToList();
-        public List<TradeGoodItem> TradeGoods => InventoryItems.OfType<TradeGoodItem>().ToList();
-        public List<WeaponItem> Weapons => InventoryItems.OfType<WeaponItem>().ToList();
+        public List<ArmorItem> GetArmorItems()
+        {
+            return InventoryItems.OfType<ArmorItem>().ToList();
+        }
+
+        public List<ConsumableItem> GetConsumableItems()
+        {
+            return InventoryItems.OfType<ConsumableItem>().ToList();
+        }
+
+        public List<ContainerItem> GetContainerItems()
+        {
+            return InventoryItems.OfType<ContainerItem>().ToList();
+        }
+
+        public List<GemItem> GetGemItems()
+        {
+            return InventoryItems.OfType<GemItem>().ToList();
+        }
+
+        public List<KeyItem> GetKeyItems()
+        {
+            return InventoryItems.OfType<KeyItem>().ToList();
+        }
+
+        public List<MiscellaneousItem> GetMiscellaneousItems()
+        {
+            return InventoryItems.OfType<MiscellaneousItem>().ToList();
+        }
+
+        public List<MoneyItem> GetMoneyItems()
+        {
+            return InventoryItems.OfType<MoneyItem>().ToList();
+        }
+
+        public List<ProjectileItem> GetProjectileItems()
+        {
+            return InventoryItems.OfType<ProjectileItem>().ToList();
+        }
+
+        public List<QuestItem> GetQuestItems()
+        {
+            return InventoryItems.OfType<QuestItem>().ToList();
+        }
+
+        public List<QuiverItem> GetQuiverItems()
+        {
+            return InventoryItems.OfType<QuiverItem>().ToList();
+        }
+
+        public List<ReagentItem> GetReagentItems()
+        {
+            return InventoryItems.OfType<ReagentItem>().ToList();
+        }
+
+        public List<RecipeItem> GetRecipeItems()
+        {
+            return InventoryItems.OfType<RecipeItem>().ToList();
+        }
+
+        public List<TradeGoodItem> GetTradeGoodItems()
+        {
+            return InventoryItems.OfType<TradeGoodItem>().ToList();
+        }
+
+        public List<WeaponItem> GetWeaponItems()
+        {
+            return InventoryItems.OfType<WeaponItem>().ToList();
+        }
 
         public WowCharacterManager(IWowDataAdapter wowDataAdapter, IWowActionExecutor wowActionExecutor, IItemComparator itemComparator)
         {

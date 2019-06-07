@@ -1,8 +1,11 @@
-﻿namespace AmeisenBotRevamped.ObjectManager.WowObjects.Enums
+﻿using System;
+
+namespace AmeisenBotRevamped.ObjectManager.WowObjects.Enums
 {
-    public enum UnitFlagsDynamic
+    [Flags]
+    public enum DynamicUnitFlags
     {
-        Nome = 0x0,
+        None = 0x0,
         Lootable = 0x1,
         TrackUnit = 0x2,
         TaggedByOther = 0x4,

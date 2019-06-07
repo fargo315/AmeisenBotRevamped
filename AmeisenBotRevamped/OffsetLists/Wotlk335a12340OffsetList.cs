@@ -1,6 +1,6 @@
 ﻿namespace AmeisenBotRevamped.OffsetLists
 {
-    public class Wotlk335a12340OffsetList : IOffsetList
+    public class Wotlk335A12340OffsetList : IOffsetList
     {
         public uint StaticPlayerName { get; } = 0xC79D18;
         public uint StaticRealmName { get; } = 0xC79B9E;

@@ -1,5 +1,8 @@
-﻿namespace AmeisenBotRevamped.ObjectManager.WowObjects.Enums
+﻿using System;
+
+namespace AmeisenBotRevamped.ObjectManager.WowObjects.Enums
 {
+    [Flags]
     public enum UnitFlags
     {
         None = 0,
@@ -15,8 +18,8 @@
         Disarmed = 0x200000,
         Confused = 0x400000,
         Fleeing = 0x800000,
-        Skinnable = 0x8000000,
         Mounted = 0x4000000,
+        Skinnable = 0x8000000,
         Dazed = 0x20000000
     }
 }

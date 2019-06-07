@@ -43,13 +43,13 @@ namespace AmeisenBotRevamped.ObjectManager.WowObjects
         public bool IsMounted => UnitFlags[(int)Enums.UnitFlags.Mounted];
         public bool IsDazed => UnitFlags[(int)Enums.UnitFlags.Dazed];
 
-        public bool IsLootable => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.Lootable];
-        public bool IsTrackedUnit => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.TrackUnit];
-        public bool IsTaggedByOther => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.TaggedByOther];
-        public bool IsTaggedByMe => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.TaggedByMe];
-        public bool IsSpecialInfo => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.SpecialInfo];
-        public bool IsDead => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.Dead];
-        public bool IsReferAFriendLinked => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.ReferAFriendLinked];
-        public bool IsTappedByThreat => UnitFlagsDynamic[(int)Enums.UnitFlagsDynamic.TappedByThreat];
+        public bool IsLootable => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.Lootable];
+        public bool IsTrackedUnit => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.TrackUnit];
+        public bool IsTaggedByOther => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.TaggedByOther];
+        public bool IsTaggedByMe => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.TaggedByMe];
+        public bool IsSpecialInfo => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.SpecialInfo];
+        public bool IsDead => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.Dead];
+        public bool IsReferAFriendLinked => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.ReferAFriendLinked];
+        public bool IsTappedByThreat => UnitFlagsDynamic[(int)Enums.DynamicUnitFlags.TappedByThreat];
     }
 }

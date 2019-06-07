@@ -9,7 +9,7 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
 {
     public class BotStateIdle : BotState
     {
-        AmeisenBotStateMachine StateMachine { get; set; }
+        AmeisenBotStateMachine StateMachine { get; }
 
         public BotStateIdle(AmeisenBotStateMachine stateMachine)
         {
@@ -27,18 +27,17 @@ namespace AmeisenBotRevamped.AI.StateMachine.States
             if (StateMachine.IsMeSupposedToFollow(StateMachine.FindUnitToFollow()))
             {
                 StateMachine.SwitchState(typeof(BotStateFollow));
-                return;
             }
         }
 
         public override void Exit()
         {
-
+            // TODO
         }
 
         public override void Start()
         {
-
+            // TODO
         }
 
         public override string ToString() => "Idling";

@@ -14,47 +14,47 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public void AcceptPartyInvite()
         {
-
+            // Empty for tests
         }
 
         public void AcceptResurrect()
         {
-
+            // Empty for tests
         }
 
         public void AcceptSummon()
         {
-
+            // Empty for tests
         }
 
         public void AntiAfk()
         {
-
+            // Empty for tests
         }
 
         public void AttackUnit(WowUnit unit)
         {
-
+            // Empty for tests
         }
 
         public void CastSpell(string name, bool castOnSelf = false)
         {
-
+            // Empty for tests
         }
 
         public void CofirmBop()
         {
-
+            // Empty for tests
         }
 
         public void CofirmReadyCheck(bool isReady)
         {
-
+            // Empty for tests
         }
 
         public void FaceUnit(WowPlayer player, WowPosition positionToFace)
         {
-
+            // Empty for tests
         }
 
         public List<string> GetAuras(string luaunitName)
@@ -94,72 +94,72 @@ namespace AmeisenBotRevamped.ActionExecutors
 
         public void InteractWithGuid(ulong guid, ClickToMoveType clickToMoveType = ClickToMoveType.Interact)
         {
-
+            // Empty for tests
         }
 
         public void Jump()
         {
-
+            // Empty for tests
         }
 
         public void KickNpcsOutOfMammoth()
         {
-
+            // Empty for tests
         }
 
         public void LootEveryThing()
         {
-
+            // Empty for tests
         }
 
         public void LuaDoString(string command)
         {
-
+            // Empty for tests
         }
 
         public void MoveToPosition(WowPosition targetPosition, ClickToMoveType clickToMoveType = ClickToMoveType.Move, float distance = 1.5F)
         {
-
+            // Empty for tests
         }
 
         public void ReleaseSpirit()
         {
-
+            // Empty for tests
         }
 
         public void RepairAllItems()
         {
-
+            // Empty for tests
         }
 
         public void RetrieveCorpse()
         {
-
+            // Empty for tests
         }
 
         public void RightClickUnit(WowUnit wowUnit)
         {
-
+            // Empty for tests
         }
 
         public void SendChatMessage(string message)
         {
-
+            // Empty for tests
         }
 
         public void SendKey(IntPtr vKey, int minDelay = 20, int maxDelay = 40)
         {
-
+            // Empty for tests
         }
 
         public void Stop()
         {
-
+            // Empty for tests
         }
 
         public void TargetGuid(ulong guid)
         {
-
+            // Empty for tests
         }
     }
 }

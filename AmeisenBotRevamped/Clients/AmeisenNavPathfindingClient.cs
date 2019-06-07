@@ -1,9 +1,9 @@
 ﻿using AmeisenBotRevamped.Clients.Structs;
 using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.Logging.Enums;
-using AmeisenBotRevamped.ObjectManager.WowObjects.Structs;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -38,32 +38,34 @@ namespace AmeisenBotRevamped.Clients
         {
             if (!TcpClient.Connected)
             {
-                try
-                {
-                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tConnecting to NavmeshServer {Ip}:{Port}", LogLevel.Verbose);
-                    TcpClient.Connect(Ip, Port);
-                }
-                catch { }
+                AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tConnecting to NavmeshServer {Ip}:{Port}", LogLevel.Verbose);
+                TcpClient.Connect(Ip, Port);
             }
 
             if (TcpClient?.Client != null)
+            {
                 IsConnected = TcpClient.Connected;
+            }
         }
 
         public List<Vector3> GetPath(Vector3 start, Vector3 end, int mapId)
         {
-            if (!TcpClient.Connected) return new List<Vector3>();
+            if (!TcpClient.Connected)
+            {
+                return new List<Vector3>();
+            }
+
             StreamReader sReader = new StreamReader(TcpClient.GetStream(), Encoding.ASCII);
             StreamWriter sWriter = new StreamWriter(TcpClient.GetStream(), Encoding.ASCII);
 
             string pathRequest = JsonConvert.SerializeObject(new PathRequest(start, end, mapId));
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tSending PathRequest to server: {pathRequest}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tSending PathRequest to server: {pathRequest}", LogLevel.Verbose);
 
             sWriter.WriteLine(pathRequest + " &gt;");
             sWriter.Flush();
 
             string pathJson = sReader.ReadLine().Replace("&gt;", "");
-            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X")}]\tServer returned: {pathJson}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tServer returned: {pathJson}", LogLevel.Verbose);
 
             return JsonConvert.DeserializeObject<List<Vector3>>(pathJson);
         }

@@ -1,6 +1,6 @@
 ﻿namespace AmeisenBotRevamped.CharacterManager.Enums
 {
-    public enum ArmorType : int
+    public enum ArmorType
     {
         MISCELLANEOUS,
         CLOTH,

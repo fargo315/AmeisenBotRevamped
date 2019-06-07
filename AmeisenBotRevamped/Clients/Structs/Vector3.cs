@@ -21,5 +21,27 @@ namespace AmeisenBotRevamped.Clients.Structs
             Y = y;
             Z = z;
         }
+
+        public override bool Equals(object obj)
+        {
+            return GetHashCode() == obj.GetHashCode();
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)((X * 23 * 23)
+                + (Y * 23)
+                + Z);
+        }
+
+        public static bool operator ==(Vector3 left, Vector3 right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Vector3 left, Vector3 right)
+        {
+            return !(left == right);
+        }
     }
 }

@@ -5,6 +5,7 @@ using AmeisenBotRevamped.Logging.Enums;
 using AmeisenBotRevamped.OffsetLists;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using TrashMemCore;
@@ -57,17 +58,17 @@ namespace AmeisenBotRevamped.Autologin
             }
             catch (Exception e)
             {
-                AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tCrash at Login: \n{e}", LogLevel.Error);
+                AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tCrash at Login: \n{e}", LogLevel.Error);
             }
 
-            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tLogin successful...", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tLogin successful...", LogLevel.Verbose);
             LoginInProgress = false;
             LoginInProgressCharactername = string.Empty;
         }
 
         private void HandleLogin(TrashMem trashMem, Process process, WowAccount wowAccount)
         {
-            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Login into account: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tHandling Login into account: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
             foreach (char c in wowAccount.Username)
             {
                 SendKeyToProcess(process, c, char.IsUpper(c));
@@ -102,7 +103,7 @@ namespace AmeisenBotRevamped.Autologin
 
         private void HandleCharSelect(TrashMem trashMem, Process process, WowAccount wowAccount)
         {
-            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X")}]\tHandling Characterselection: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
+            AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tHandling Characterselection: {wowAccount.Username}:{wowAccount.CharacterName}:{wowAccount.CharacterSlot}", LogLevel.Verbose);
             int currentSlot = trashMem.ReadInt32(OffsetList.StaticCharacterSlotSelected);
 
             while (currentSlot != wowAccount.CharacterSlot)
