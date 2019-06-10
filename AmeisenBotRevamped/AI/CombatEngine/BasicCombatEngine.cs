@@ -55,13 +55,14 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
             WowUnit player = (WowUnit)WowDataAdapter.ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
 
-            if (player.TargetGuid != ActiveTarget.Guid)
+            if (ActiveTarget?.Guid != 0 
+                && player.TargetGuid != ActiveTarget.Guid)
             {
                 WowActionExecutor.TargetGuid(ActiveTarget.Guid);
             }
             
             WowActionExecutor.AttackUnit(ActiveTarget);
-            SpellStrategy?.GetSpellToCast(player, ActiveTarget);
+            /*SpellStrategy?.GetSpellToCast(player, ActiveTarget);*/
         }
 
         public void Start()
@@ -110,6 +111,7 @@ namespace AmeisenBotRevamped.AI.CombatEngine
 
         private List<Spell> ReadAvaiableSpells()
         {
+            AmeisenBotLogger.Instance.Log($"[{WowActionExecutor?.ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tReading Spellbok...", LogLevel.Verbose);
             WowActionExecutor?.LuaDoString("abotSpellResult='['tabCount=GetNumSpellTabs()for a=1,tabCount do tabName,tabTexture,tabOffset,numEntries=GetSpellTabInfo(a)for b=tabOffset+1,tabOffset+numEntries do abSpellName,abSpellRank=GetSpellName(b,\"BOOKTYPE_SPELL\")if abSpellName then abName,abRank,_,abCosts,_,_,abCastTime,abMinRange,abMaxRange=GetSpellInfo(abSpellName,abSpellRank)abotSpellResult=abotSpellResult..'{'..'\"spellbookName\": \"'..tostring(tabName or 0)..'\",'..'\"spellbookId\": \"'..tostring(a or 0)..'\",'..'\"name\": \"'..tostring(abSpellName or 0)..'\",'..'\"rank\": \"'..tostring(abRank or 0)..'\",'..'\"castTime\": \"'..tostring(abCastTime or 0)..'\",'..'\"minRange\": \"'..tostring(abMinRange or 0)..'\",'..'\"maxRange\": \"'..tostring(abMaxRange or 0)..'\",'..'\"costs\": \"'..tostring(abCosts or 0)..'\"'..'}'if a<tabCount or b<tabOffset+numEntries then abotSpellResult=abotSpellResult..','end end end end;abotSpellResult=abotSpellResult..']'");
             string result = WowActionExecutor?.GetLocalizedText("abotSpellResult");
 

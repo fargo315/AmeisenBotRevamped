@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AmeisenBotRevamped.ActionExecutors.Enums
 {
-    public enum ClickToMoveType
+    public enum ClickToMoveType : int
     {
         None = 0,
         FaceTarget = 1,

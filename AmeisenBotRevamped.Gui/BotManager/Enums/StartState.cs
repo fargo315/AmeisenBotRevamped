@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AmeisenBotRevamped.Gui.BotManager.Enums
+﻿namespace AmeisenBotRevamped.Gui.BotManager.Enums
 {
-    public enum StartState
+    public enum BotStartState
     {
-        NotRunning,
-        StartInProgress,
-        Running,
+        None = 0,
+        WowStartInProgress,
+        WowIsRunning,
+        BotIsAttaching,
+        BotIsAttached
     }
 }

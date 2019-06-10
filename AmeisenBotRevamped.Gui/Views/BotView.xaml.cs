@@ -2,6 +2,7 @@
 using AmeisenBotRevamped.ObjectManager.WowObjects.Enums;
 using AmeisenBotRevamped.Utils;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -14,13 +15,15 @@ namespace AmeisenBotRevamped.Gui.Views
     /// <summary>
     /// Interaktionslogik für BotView.xaml
     /// </summary>
-    public partial class BotView : UserControl
+    public partial class BotView : UserControl, IAmeisenBotView
     {
         public delegate void AttachBotFunction(AmeisenBot ameisenBot);
 
         public AmeisenBot AmeisenBot { get; }
         private AttachBotFunction AttachBotFunc { get; }
         private Settings Settings { get; }
+
+        public Process Process => AmeisenBot?.Process;
 
         public BotView(AmeisenBot ameisenBot, Settings settings, AttachBotFunction attachBotFunction)
         {

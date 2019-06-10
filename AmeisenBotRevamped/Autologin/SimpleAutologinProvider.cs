@@ -24,7 +24,7 @@ namespace AmeisenBotRevamped.Autologin
 
         public string LoginInProgressCharactername { get; private set; }
 
-        public void DoLogin(Process process, WowAccount wowAccount, IOffsetList offsetlist)
+        public bool DoLogin(Process process, WowAccount wowAccount, IOffsetList offsetlist, int maxTries = 4)
         {
             try
             {
@@ -36,12 +36,16 @@ namespace AmeisenBotRevamped.Autologin
 
                 OffsetList = offsetlist;
 
-                while (trashMem.ReadInt32(offsetlist.StaticIsWorldLoaded) != 1 && count < 8)
+                while (trashMem.ReadInt32(offsetlist.StaticIsWorldLoaded) != 1)
                 {
+                    if (process.HasExited || count >= maxTries)
+                        return false;
+
                     switch (trashMem.ReadString(offsetlist.StaticGameState, Encoding.ASCII, 10))
                     {
                         case "login":
                             HandleLogin(trashMem, process, wowAccount);
+                            count++;
                             break;
 
                         case "charselect":
@@ -49,21 +53,24 @@ namespace AmeisenBotRevamped.Autologin
                             break;
 
                         default:
+                            count++;
                             break;
                     }
 
                     Thread.Sleep(2000);
-                    count++;
                 }
             }
             catch (Exception e)
             {
                 AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tCrash at Login: \n{e}", LogLevel.Error);
+                return false;
             }
 
             AmeisenBotLogger.Instance.Log($"[{process.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tLogin successful...", LogLevel.Verbose);
             LoginInProgress = false;
             LoginInProgressCharactername = string.Empty;
+
+            return true;
         }
 
         private void HandleLogin(TrashMem trashMem, Process process, WowAccount wowAccount)

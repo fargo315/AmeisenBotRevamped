@@ -103,10 +103,10 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public bool IsUnitInFollowRange(WowUnit unitToFollow)
         {
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
-            WowPosition myPosition = wowPlayer.Position;
 
             if (wowPlayer != null && unitToFollow != null)
             {
+                WowPosition myPosition = wowPlayer.Position;
                 return BotMath.GetDistance(myPosition, unitToFollow.Position) >= UnitFollowThreshold;
             }
             else
@@ -118,10 +118,10 @@ namespace AmeisenBotRevamped.AI.StateMachine
         public bool IsUnitInFollowMaxRange(WowUnit unitToFollow)
         {
             WowUnit wowPlayer = (WowUnit)ObjectManager.GetWowObjectByGuid(WowDataAdapter.PlayerGuid);
-            WowPosition myPosition = wowPlayer.Position;
 
             if (wowPlayer != null && unitToFollow != null)
             {
+                WowPosition myPosition = wowPlayer.Position;
                 if (unitToFollow.Guid == WowDataAdapter.PartyleaderGuid)
                 {
                     return BotMath.GetDistance(myPosition, unitToFollow.Position) <= UnitFollowThresholdLeaderMax;

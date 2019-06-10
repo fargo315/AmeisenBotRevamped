@@ -29,7 +29,7 @@ namespace AmeisenBotRevamped.Gui
         public Settings Settings { get; }
         public Timer ViewUpdateTimer { get; private set; }
 
-        public AmeisenBot SelectedBot => (AmeisenBot)listboxBots.SelectedItem;
+        public AmeisenBot SelectedBot => ((ManagedAmeisenBot)listboxBots.SelectedItem).AmeisenBot;
 
         public SettingsWindow(Settings activeSettings, List<ManagedAmeisenBot> ameisenBots)
         {

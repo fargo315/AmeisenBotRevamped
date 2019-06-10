@@ -2,6 +2,8 @@
 using AmeisenBotRevamped.Logging;
 using AmeisenBotRevamped.Logging.Enums;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -39,7 +41,19 @@ namespace AmeisenBotRevamped.Clients
             if (!TcpClient.Connected)
             {
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tConnecting to NavmeshServer {Ip}:{Port}", LogLevel.Verbose);
-                TcpClient.Connect(Ip, Port);
+                try
+                {
+                    TcpClient.Connect(Ip, Port);
+                }
+                catch (SocketException ex)
+                {
+                    // Server not running
+                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tUnable to connect to Navmesh Server: \n{ex}", LogLevel.Error);
+                }
+                catch (Exception ex)
+                {
+                    AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tError occured while connecting to the Navmesh Server: \n{ex}", LogLevel.Error);
+                }
             }
 
             if (TcpClient?.Client != null)
@@ -67,8 +81,38 @@ namespace AmeisenBotRevamped.Clients
             string pathJson = sReader.ReadLine().Replace("&gt;", "");
             AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tServer returned: {pathJson}", LogLevel.Verbose);
 
-            return JsonConvert.DeserializeObject<List<Vector3>>(pathJson);
+            if (IsValidJson(pathJson)) {
+                return JsonConvert.DeserializeObject<List<Vector3>>(pathJson.Trim());
+            }
+            else
+            {
+                return new List<Vector3>();
+            }
         }
+
+        private static bool IsValidJson(string strInput)
+        {
+            strInput = strInput.Trim();
+            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) ||
+                (strInput.StartsWith("[") && strInput.EndsWith("]")))
+            {
+                try
+                {
+                    JToken obj = JToken.Parse(strInput);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
 
         public bool IsInLineOfSight(Vector3 start, Vector3 end, int mapId)
         {

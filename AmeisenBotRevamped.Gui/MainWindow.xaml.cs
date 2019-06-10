@@ -27,7 +27,6 @@ namespace AmeisenBotRevamped.Gui
         private static readonly string SettingsPath = AppDomain.CurrentDomain.BaseDirectory + "config.json";
 
         private List<AmeisenBot> UnmanagedAmeisenBots { get; }
-        private List<BotView> BotViews { get; set; }
 
         private Timer ViewUpdateTimer { get; }
 
@@ -53,24 +52,18 @@ namespace AmeisenBotRevamped.Gui
 
             LoadSettings();
 
-            AmeisenBotManager = new AmeisenBotManager(UnmanagedAmeisenBots, Settings, ReadBotFleetAccounts(), OffsetList);
+            AmeisenBotManager = new AmeisenBotManager(Dispatcher, OffsetList, Settings);
         }
 
         #region UIEvents
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            BotViews = new List<BotView>();
             ViewUpdateTimer.Start();
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             AmeisenBotLogger.Instance.Log("AmeisenBotGui closing...");
-
-            foreach(BotView botView in BotViews)
-            {
-                botView.AmeisenBot.Detach();
-            }
 
             ViewUpdateTimer.Stop();
             AmeisenBotManager.Shutdown();
@@ -91,19 +84,19 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonToggleFleet_Click(object sender, RoutedEventArgs e)
         {
-            if (AmeisenBotManager.Enabled)
+            if (AmeisenBotManager.FleetMode)
             {
                 AmeisenBotLogger.Instance.Log("FleetMode disabled");
                 buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF4B4B4B"));
                 buttonToggleFleet.Content = "Fleet-Mode OFF";
-                AmeisenBotManager.Stop();
+                AmeisenBotManager.FleetMode = false;
             }
             else
             {
                 AmeisenBotLogger.Instance.Log("FleetMode enabled");
                 buttonToggleFleet.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF0078FF"));
                 buttonToggleFleet.Content = "Fleet-Mode ON";
-                AmeisenBotManager.Start();
+                AmeisenBotManager.FleetMode = true;
             }
         }
         #endregion
@@ -111,52 +104,58 @@ namespace AmeisenBotRevamped.Gui
         #region TimerCallbacks
         private void CUpdateViews(object sender, ElapsedEventArgs e)
         {
-            Dispatcher.Invoke(() => labelCurrentMemoryUsage.Content = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1000000);
-
-            foreach (ManagedAmeisenBot bot in AmeisenBotManager.ManagedAmeisenBots)
-            {
-                Dispatcher.Invoke(() => BotViews.Add(new BotView(
-                    bot.AmeisenBot,
-                    Settings,
-                    AmeisenBotManager.AttachAmeisenBotOnNewThread)));
-            }
-
-            foreach (WowProcess process in BotUtils.GetRunningWows(OffsetList))
-            {
-                if (!BotViews.Any(b => b.AmeisenBot.Process.Id == process.Process.Id)
-                    && !AmeisenBotManager.ManagedAmeisenBots.Any(m => m.AmeisenBot.Process.Id == process.Process.Id))
-                {
-                    AmeisenBot newAmeisenBot = AmeisenBotManager.SetupAmeisenBot(process.Process);
-                    Dispatcher.Invoke(() => BotViews.Add(new BotView(
-                        newAmeisenBot,
-                        Settings,
-                        AmeisenBotManager.AttachAmeisenBotOnNewThread)));
-
-                    UnmanagedAmeisenBots.Add(newAmeisenBot);
-                }
-            }
-
-            List<BotView> newBotViews = new List<BotView>();
-            foreach (BotView botView in BotViews)
-            {
-                if (!botView.AmeisenBot.Process.HasExited
-                    && botView.AmeisenBot.WowDataAdapter.GameState != WowGameState.Crashed)
-                {
-                    newBotViews.Add(botView);
-
-                    Dispatcher.Invoke(() => AddBotToView(botView));
-                    Dispatcher.Invoke(() => botView.UpdateView());
-                }
-                else
-                {
-                    Dispatcher.Invoke(() => RemoveBotFromView(botView));
-                }
-            }
-            BotViews = newBotViews;
-
-            Dispatcher.Invoke(() => UpdateViews());
+            Dispatcher.Invoke(() => UpdateBotViews());
+            Dispatcher.Invoke(() => UpdateFooterViews());
         }
         #endregion
+
+        private void UpdateBotViews()
+        {
+            AddNewBotViews();
+
+            foreach (BotView botView in mainWrappanel.Children.OfType<BotView>())
+            {
+                botView.UpdateView();
+            }
+            foreach (WowView wowView in mainWrappanel.Children.OfType<WowView>())
+            {
+                wowView.UpdateView();
+            }
+
+            RemoveDeadBotViews();
+        }
+
+        private void AddNewBotViews()
+        {
+            foreach (IAmeisenBotView ameisenBotView in AmeisenBotManager.IAmeisenBotViews)
+                if (ameisenBotView.GetType() == typeof(BotView))
+                {
+                    if (!mainWrappanel.Children.OfType<BotView>().Any(c => ameisenBotView.Process.Id == c.Process.Id))
+                        mainWrappanel.Children.Add((BotView)ameisenBotView);
+                }
+                else if (ameisenBotView.GetType() == typeof(WowView))
+                {
+                    if (!mainWrappanel.Children.OfType<WowView>().Any(c => ameisenBotView.Process.Id == c.WowProcess.Process.Id))
+                        mainWrappanel.Children.Add((WowView)ameisenBotView);
+                }
+        }
+
+        private void RemoveDeadBotViews()
+        {
+            List<BotView> botViews = mainWrappanel.Children.OfType<BotView>().ToList();
+            foreach (BotView botView in botViews)
+            {
+                if (!AmeisenBotManager.IAmeisenBotViews.Contains(botView))
+                    mainWrappanel.Children.Remove(botView);
+            }
+
+            List<WowView> wowViews = mainWrappanel.Children.OfType<WowView>().ToList();
+            foreach (WowView wowView in wowViews)
+            {
+                if (!AmeisenBotManager.IAmeisenBotViews.Contains(wowView))
+                    mainWrappanel.Children.Remove(wowView);
+            }
+        }
 
         private void AddBotToView(BotView botView)
         {
@@ -174,10 +173,11 @@ namespace AmeisenBotRevamped.Gui
             }
         }
 
-        private void UpdateViews()
+        private void UpdateFooterViews()
         {
-            labelActiveBotThreads.Content = AmeisenBotManager.AmeisenBotThreads.Count;
-            labelActiveWatchdogs.Content = AmeisenBotManager.AmeisenBotWatchdogThreads.Count;
+            //labelActiveBotThreads.Content = AmeisenBotManager.AmeisenBotThreads.Count;
+            //labelActiveWatchdogs.Content = AmeisenBotManager.AmeisenBotWatchdogThreads.Count;
+            labelCurrentMemoryUsage.Content = System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1000000;
         }
 
         private void LoadSettings()

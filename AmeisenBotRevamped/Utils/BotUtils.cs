@@ -29,22 +29,15 @@ namespace AmeisenBotRevamped.Utils
                 catch { }
 
                 string name = trashMem.ReadString(offsetList.StaticPlayerName, Encoding.ASCII, 12);
-                if (name.Length != 0)
+                if (name.Length == 0)
                 {
-                    name = "not logged in";
+                    name = "";
                 }
 
                 string realm = trashMem.ReadString(offsetList.StaticRealmName, Encoding.ASCII, 12);
-                if (realm.Length != 0)
+                if (realm.Length == 0)
                 {
-                    if (name == "not logged in")
-                    {
-                        realm = "";
-                    }
-                    else
-                    {
-                        realm = "not logged in";
-                    }
+                    realm = "";
                 }
 
                 wows.Add(new WowProcess(p, name, realm, isAlreadyHooked));

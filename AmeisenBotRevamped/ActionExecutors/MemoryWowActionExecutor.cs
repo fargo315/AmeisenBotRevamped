@@ -152,7 +152,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             {
                 $"PUSH {BitConverter.ToUInt32(guidBytes, 4)}",
                 $"PUSH {BitConverter.ToUInt32(guidBytes, 0)}",
-                $"CALL {OffsetList.FunctionSetTarget}",
+                $"CALL 0x{OffsetList.FunctionSetTarget.ToString("X")}",
                 "ADD ESP, 0x8",
                 "RETN"
             };
@@ -180,11 +180,11 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 string[] asm = new string[]
                 {
-                    $"MOV EAX, {memAlloc.Address}",
+                    $"MOV EAX, 0x{memAlloc.Address.ToString("X")}",
                     "PUSH 0",
                     "PUSH EAX",
                     "PUSH EAX",
-                    $"CALL {OffsetList.FunctionLuaDoString}",
+                    $"CALL 0x{OffsetList.FunctionLuaDoString.ToString("X")}",
                     "ADD ESP, 0xC",
                     "RETN",
                 };
@@ -210,11 +210,11 @@ namespace AmeisenBotRevamped.ActionExecutors
 
                 string[] asmLocalText = new string[]
                 {
-                    $"CALL {OffsetList.FunctionGetActivePlayerObject}",
+                    $"CALL 0x{OffsetList.FunctionGetActivePlayerObject.ToString("X")}",
                     "MOV ECX, EAX",
                     "PUSH -1",
-                    $"PUSH {memAlloc.Address}",
-                    $"CALL {OffsetList.FunctionGetLocalizedText}",
+                    $"PUSH 0x{memAlloc.Address.ToString("X")}",
+                    $"CALL 0x{OffsetList.FunctionGetLocalizedText.ToString("X")}",
                     "RETN",
                 };
 
@@ -257,7 +257,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 CodecaveForCheck = TrashMem.AllocateMemory(128);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCCCheck is at \"0x{CodecaveForCheck.Address.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}\"", LogLevel.Verbose);
                 // codecave for the code we wa't to execute
-                CodecaveForExecution = TrashMem.AllocateMemory(4096 * 8);
+                CodecaveForExecution = TrashMem.AllocateMemory(2048);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tCCExecution is at \"0x{CodecaveForExecution.Address.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}\"", LogLevel.Verbose);
 
                 TrashMem.Asm.Clear();
@@ -266,19 +266,19 @@ namespace AmeisenBotRevamped.ActionExecutors
                 TrashMem.Asm.AddLine("PUSHAD");
 
                 // check for code to be executed
-                TrashMem.Asm.AddLine($"MOV EBX, [{CodeToExecuteAddress.Address}]");
+                TrashMem.Asm.AddLine($"MOV EBX, [0x{CodeToExecuteAddress.Address.ToString("X")}]");
                 TrashMem.Asm.AddLine("TEST EBX, 1");
                 TrashMem.Asm.AddLine("JE @out");
 
                 // execute our stuff and get return address
-                TrashMem.Asm.AddLine($"MOV EDX, {CodecaveForExecution.Address}");
+                TrashMem.Asm.AddLine($"MOV EDX, 0x{CodecaveForExecution.Address.ToString("X")}");
                 TrashMem.Asm.AddLine("CALL EDX");
-                TrashMem.Asm.AddLine($"MOV [{ReturnValueAddress.Address}], EAX");
+                TrashMem.Asm.AddLine($"MOV [0x{ReturnValueAddress.Address.ToString("X")}], EAX");
 
                 // finish up our execution
                 TrashMem.Asm.AddLine("@out:");
                 TrashMem.Asm.AddLine("MOV EDX, 0");
-                TrashMem.Asm.AddLine($"MOV [{CodeToExecuteAddress.Address}], EDX");
+                TrashMem.Asm.AddLine($"MOV [0x{CodeToExecuteAddress.Address.ToString("X")}], EDX");
 
                 // restore registers
                 TrashMem.Asm.AddLine("POPAD");
@@ -305,7 +305,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 TrashMem.WriteBytes(CodecaveForCheck.Address + (uint)asmLenght, originalEndsceneBytes);
 
                 // return to original function after we're done with our stuff
-                TrashMem.Asm.AddLine($"JMP {EndsceneReturnAddress}");
+                TrashMem.Asm.AddLine($"JMP 0x{EndsceneReturnAddress.ToString("X")}");
                 TrashMem.Asm.Inject(CodecaveForCheck.Address + (uint)asmLenght + 5);
                 TrashMem.Asm.Clear();
                 // ---------------------------------------------------
@@ -314,7 +314,7 @@ namespace AmeisenBotRevamped.ActionExecutors
                 // ---------------------------------------------------
 
                 // modify original EndScene instructions to start the hook
-                TrashMem.Asm.AddLine($"JMP {CodecaveForCheck.Address}");
+                TrashMem.Asm.AddLine($"JMP 0x{CodecaveForCheck.Address.ToString("X")}");
                 TrashMem.Asm.Inject(EndsceneAddress);
                 AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tInjected Hook [IsWoWHooked = {IsWoWHooked}]", LogLevel.Verbose);
                 // we should've hooked WoW now
@@ -493,10 +493,10 @@ namespace AmeisenBotRevamped.ActionExecutors
 
             string[] asm = new string[]
             {
-                $"PUSH " + wowUnitA.BaseAddress,
-                $"MOV ECX, " + wowUnitB.BaseAddress,
-                $"CALL " + OffsetList.FunctionGetUnitReaction,
-                $"MOV [{memAlloc.Address}], EAX",
+                $"PUSH 0x{wowUnitA.BaseAddress.ToString("X")}",
+                $"MOV ECX, 0x{wowUnitB.BaseAddress.ToString("X")}",
+                $"CALL 0x{OffsetList.FunctionGetUnitReaction.ToString("X")}",
+                $"MOV [0x{memAlloc.Address.ToString("X")}], EAX",
                 "RETN",
             };
 
@@ -536,7 +536,7 @@ namespace AmeisenBotRevamped.ActionExecutors
             AmeisenBotLogger.Instance.Log($"[{ProcessId.ToString("X", CultureInfo.InvariantCulture.NumberFormat)}]\tDoing RightClick: {wowUnit.Name}", LogLevel.Verbose);
             string[] asm = new string[]
             {
-                $"MOV ECX, {wowUnit.BaseAddress}",
+                $"MOV ECX, 0x{wowUnit.BaseAddress.ToString("X")}",
                 "MOV EAX, DWORD[ECX]",
                 "MOV EAX, DWORD[EAX + 88H]",
                 "CALL EAX",

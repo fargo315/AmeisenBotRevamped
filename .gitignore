@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Visual Studio 2015/2017 cache/options directory
+.sonarqube/
+
 # User-specific files
 *.suo
 *.user

@@ -112,19 +112,15 @@ namespace AmeisenBotRevamped.CharacterManager
             {
                 string resultJson = ReadInventoryItems();
 
-                try
+                List<RawItem> rawItems = JsonConvert.DeserializeObject<List<RawItem>>(resultJson);
+                if (InventoryItems != null)
                 {
-                    List<RawItem> rawItems = JsonConvert.DeserializeObject<List<RawItem>>(resultJson);
                     InventoryItems.Clear();
                     foreach (RawItem rawItem in rawItems)
                     {
                         InventoryItems.Add(ItemFactory.BuildSpecificItem(rawItem));
                     }
-                    AmeisenBotLogger.Instance.Log($"Total Items in Inventory: {InventoryItems.Count}", LogLevel.Error);
-                }
-                catch (Exception ex)
-                {
-                    AmeisenBotLogger.Instance.Log($"Crash at parsing the InventoryItems: \n{ex}", LogLevel.Error);
+                    AmeisenBotLogger.Instance.Log($"Total Items in Inventory: {InventoryItems.Count}", LogLevel.Verbose);
                 }
             }
         }

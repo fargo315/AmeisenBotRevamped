@@ -97,9 +97,13 @@
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WowView.xaml.cs">
+      <DependentUpon>WowView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\BotView.xaml.cs">
       <DependentUpon>BotView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\IAmeisenBotView.cs" />
     <Page Include="DebugWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -123,6 +127,10 @@
     <Page Include="Styles\ButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WowView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\BotView.xaml">
       <SubType>Designer</SubType>

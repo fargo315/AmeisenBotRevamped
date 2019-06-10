@@ -89,6 +89,9 @@ namespace AmeisenBotRevamped.EventAdapters
 
         private void HandlEvents(string eventJson)
         {
+            if (eventJson?.Length == 0)
+                return;
+
             try
             {
                 List<RawEvent> rawEvents = JsonConvert.DeserializeObject<List<RawEvent>>(eventJson);

@@ -70,7 +70,7 @@ namespace AmeisenBotRevamped
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted ActionExecutor...");
 
             WowEventAdapter = wowEventAdapter;
-            WowEventAdapter?.Start();
+            //WowEventAdapter?.Start();
             AmeisenBotLogger.Instance.Log($"[{Process?.Id.ToString("X" , CultureInfo.InvariantCulture.NumberFormat)}]\tStarted EventAdapter...");
 
             WowEventAdapter?.Subscribe(WowEvents.PARTY_INVITE_REQUEST, OnPartyInvitation);
