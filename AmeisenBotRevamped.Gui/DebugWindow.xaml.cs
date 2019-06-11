@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AmeisenBotRevamped.Gui.BotManager.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,8 +20,11 @@ namespace AmeisenBotRevamped.Gui
     /// </summary>
     public partial class DebugWindow : Window
     {
-        public DebugWindow()
+        private List<ManagedAmeisenBot> ManagedAmeisenBots { get; }
+
+        public DebugWindow(List<ManagedAmeisenBot> managedAmeisenBots)
         {
+            ManagedAmeisenBots = managedAmeisenBots;
             InitializeComponent();
         }
 
@@ -32,6 +36,16 @@ namespace AmeisenBotRevamped.Gui
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            foreach (ManagedAmeisenBot ameisenBot in ManagedAmeisenBots)
+                comboboxBots.Items.Add(ameisenBot);
+
+                comboboxBots.Items.Add("gg");
+            comboboxBots.Items.Add("gg2");
+            comboboxBots.Items.Add("gg4");
         }
     }
 }

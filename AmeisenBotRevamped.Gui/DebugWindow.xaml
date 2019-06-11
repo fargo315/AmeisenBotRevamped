@@ -5,14 +5,75 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AmeisenBotRevamped.Gui"
         mc:Ignorable="d"
-        Title="DebugWindow" Height="360" Width="240" Background="#FF3C3C3C" ResizeMode="NoResize" WindowStyle="None" BorderThickness="0" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown" >
+        Title="DebugWindow" Height="600" Width="800" Background="#FF3C3C3C" ResizeMode="NoResize" WindowStyle="None" BorderThickness="0" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown" Loaded="Window_Loaded" >
     <Grid>
         <WrapPanel Height="26" VerticalAlignment="Top" FlowDirection="RightToLeft">
             <Button x:Name="buttonClose" Style="{StaticResource CustomButtonStyle}" Content="X" BorderThickness="0" Background="#FF3C3C3C" BorderBrush="{x:Null}" Foreground="White" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Width="26" Click="ButtonClose_Click" FontSize="14"/>
         </WrapPanel>
-        <WrapPanel Margin="0,26,0,0" Background="#FF232323">
-            
-        </WrapPanel>
+        <Grid Margin="0,26,0,0" Background="#FF232323">
+            <ComboBox x:Name="comboboxBots" Style="{StaticResource ComboBoxTestStyle}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="260" Background="#FF232323" Foreground="White"/>
+            <TabControl HorizontalAlignment="Left" Height="527" Margin="10,37,0,0" VerticalAlignment="Top" Width="780" Background="#FF424242" BorderBrush="{x:Null}">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border Name="Border" BorderThickness="2,2,2,0" BorderBrush="#FF424242" CornerRadius="4,4,0,0" Margin="1,-2">
+                                        <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#FF232323" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="#FF424242" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+                <TabItem BorderBrush="{x:Null}" Background="#FF232323">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="General" Margin="0,0,0,0" VerticalAlignment="Center" Style="{StaticResource TabItemText}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Background="#FF232323"/>
+                </TabItem>
+                <TabItem Background="#FF232323" BorderBrush="{x:Null}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Inventory" Margin="0,0,0,0" VerticalAlignment="Center" Style="{StaticResource TabItemText}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Background="#FF232323"/>
+                </TabItem>
+                <TabItem Background="#FF232323" BorderBrush="{x:Null}">
+
+                    <TabItem.Header>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Equipment" Margin="0,0,0,0" VerticalAlignment="Center" Style="{StaticResource TabItemText}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Background="#FF232323"/>
+                </TabItem>
+                <TabItem Background="#FF232323" BorderBrush="{x:Null}">
+
+                    <TabItem.Header>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Spellbook" Margin="0,0,0,0" VerticalAlignment="Center" Style="{StaticResource TabItemText}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid Background="#FF232323"/>
+                </TabItem>
+            </TabControl>
+        </Grid>
         <Label Content="🤖" HorizontalAlignment="Left" Margin="0,-4,0,0" VerticalAlignment="Top" Foreground="White" FontSize="16"/>
         <Label x:Name="labelWindowTitle" Content="AmeisenBot - DebugInfo" HorizontalAlignment="Left" Margin="26,-2,0,0" VerticalAlignment="Top" Foreground="#FFDEDEDE" Background="{x:Null}" FontSize="14"/>
     </Grid>

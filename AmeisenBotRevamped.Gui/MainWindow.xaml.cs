@@ -226,7 +226,7 @@ namespace AmeisenBotRevamped.Gui
 
         private void ButtonDebugWindow_Click(object sender, RoutedEventArgs e)
         {
-            new DebugWindow().Show();
+            new DebugWindow(AmeisenBotManager.ManagedAmeisenBots).Show();
         }
     }
 }
